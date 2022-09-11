@@ -1,0 +1,85 @@
+<?xml version="1.0"?>
+<!DOCTYPE pbn SYSTEM "https://webpbn.com/pbn-0.3.dtd">
+<puzzleset>
+<source>webpbn.com</source>
+
+<puzzle type="grid" defaultcolor="black">
+<title>Plain</title>
+<author>Sam Lin</author>
+<authorid>sirsammy27</authorid>
+<copyright>(c) Copyright 2009 by Sam Lin</copyright>
+<id>#5499 (v.1)</id>
+<description>Face (see first spoiler for further description)</description>
+<note>published,definitely unique,definitely line/color solvable</note>
+
+<color name="white" char=".">FFFFFF</color>
+<color name="black" char="X">000000</color>
+
+<clues type="columns">
+<line><count>14</count><count>2</count></line>
+<line><count>11</count><count>2</count></line>
+<line><count>10</count><count>2</count></line>
+<line><count>9</count><count>2</count></line>
+<line><count>7</count><count>4</count></line>
+<line><count>4</count><count>2</count><count>2</count></line>
+<line><count>3</count><count>1</count><count>2</count><count>1</count></line>
+<line><count>2</count><count>1</count><count>1</count><count>1</count><count>1</count></line>
+<line><count>3</count><count>3</count><count>1</count><count>1</count></line>
+<line><count>8</count><count>1</count><count>2</count></line>
+<line><count>2</count><count>1</count><count>5</count></line>
+<line><count>1</count><count>3</count></line>
+<line></line>
+<line></line>
+<line></line>
+</clues>
+
+<clues type="rows">
+<line><count>12</count></line>
+<line><count>11</count></line>
+<line><count>7</count><count>2</count></line>
+<line><count>6</count><count>1</count></line>
+<line><count>5</count><count>3</count></line>
+<line><count>5</count><count>1</count><count>2</count></line>
+<line><count>5</count><count>3</count></line>
+<line><count>4</count><count>3</count></line>
+<line><count>4</count><count>1</count></line>
+<line><count>3</count><count>2</count></line>
+<line><count>2</count><count>1</count></line>
+<line><count>1</count><count>4</count></line>
+<line><count>1</count><count>1</count></line>
+<line><count>1</count><count>2</count></line>
+<line><count>4</count></line>
+<line><count>2</count></line>
+<line><count>2</count></line>
+<line><count>1</count></line>
+<line><count>6</count></line>
+<line><count>7</count></line>
+</clues>
+
+<solution type="goal">
+<image>
+|XXXXXXXXXXXX...|
+|XXXXXXXXXXX....|
+|XXXXXXX.XX.....|
+|XXXXXX...X.....|
+|XXXXX..XXX.....|
+|XXXXX.X.XX.....|
+|XXXXX..XXX.....|
+|XXXX.....XXX...|
+|XXXX.......X...|
+|XXX.......XX...|
+|XX........X....|
+|X......XXXX....|
+|X.........X....|
+|X........XX....|
+|......XXXX.....|
+|.....XX........|
+|....XX.........|
+|....X..........|
+|XXXXXX.........|
+|XXXXXXX........|
+</image>
+</solution>
+
+</puzzle>
+</puzzleset>
