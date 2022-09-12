@@ -3,13 +3,12 @@ import numpy as np
 import pandas as pd
 import os
 import xml.etree.ElementTree as ET
-import csv
 
 
 def main():
     # csv_file = f"{os.getcwd()}\\safe place.csv"
     # row_hints, col_hints = process_csv(csv_file)
-    file = f"{os.getcwd()}\\Engarde!.xml"
+    file = f"{os.getcwd()}\\Plain.xml"
     file = f"{os.getcwd()}\\safe place.xml"
     row_hints, col_hints, solution_image = parse_xml(file)
     solution_grid = format_solution_image(solution_image)
@@ -21,29 +20,38 @@ def main():
     _, solution_grid = delete_blank_edges(col_hints.copy(), solution_grid.copy(), t=1)
     row_hints, grid = delete_blank_edges(row_hints.copy(), grid.copy())
     col_hints, grid = delete_blank_edges(col_hints.copy(), grid.copy(), t=1)
-    grid = solver_count_and_fill(row_hints, grid.copy())
-    grid = solver_count_and_fill(col_hints, grid.copy(), t=1)
     for _ in range(5):
+
+        reduced_row_hints, reduced_grid = remove_solved_edges(
+            row_hints.copy(), grid.copy()
+        )
+        partial_grid = solver_count_and_fill(reduced_row_hints, reduced_grid)
+        grid = overlay_solved_cells(partial_grid, grid.copy())
+        reduced_col_hints, reduced_grid = remove_solved_edges(
+            col_hints.copy(), grid.copy(), t=1
+        )
+        partial_grid = solver_count_and_fill(reduced_col_hints, reduced_grid, t=1)
+        grid = overlay_solved_cells(partial_grid, grid.copy())
+
+
+
         grid = solver_count_from_edge(row_hints, grid.copy())
         grid = solver_count_from_edge(col_hints, grid.copy(), t=1)
         grid = solver_mark_blank_in_finished_row(row_hints, grid.copy())
         grid = solver_mark_blank_in_finished_row(col_hints, grid.copy(), t=1)
         grid = solver_mark_completed_hints_from_edge(row_hints, grid.copy())
         grid = solver_mark_completed_hints_from_edge(col_hints, grid.copy(), t=1)
-        reduced_row_hints, reduced_grid = remove_solved_edges(row_hints.copy(), grid.copy())
-        partial_grid = solver_count_and_fill(reduced_row_hints, reduced_grid)
-        grid = overlay_solved_cells(partial_grid, grid.copy())
-        reduced_col_hints, reduced_grid = remove_solved_edges(col_hints.copy(), grid.copy(), t=1)
-        partial_grid = solver_count_and_fill(reduced_col_hints, reduced_grid, t=1)
-        grid = overlay_solved_cells(partial_grid, grid.copy())
 
-
-
+        reduced_row_hints, reduced_grid = remove_solved_edges(
+            row_hints.copy(), grid.copy()
+        )
+        solver_mark_hint_edges_empty(reduced_row_hints, reduced_grid)
 
     puzzle, image = convert_grid_to_image(row_hints, col_hints, grid)
     print(puzzle)
     verify_grid_solution(grid, solution_grid)
     # puzzle.to_excel("puzzle.xlsx")
+
 
 def process_csv(csv_file):
     rows = []
@@ -124,9 +132,9 @@ def length_of_unsolved_cells(row):
                 break
         if j == 1:
             row = np.flip(row)
-    #print(np.size(row) - count)
+    # print(np.size(row) - count)
     return np.size(row) - count
-    
+
 
 # calculates the minimum length of the row solution
 def calculate_min_length(row):
@@ -386,7 +394,6 @@ def remove_solved_edges(hints, grid, t=0):
                     cell_index += 1
                 else:
                     if j == 0:
-                        # Generate list that records the starting index of the modified grid for each line
                         modified_grid_index.append(cell_index)
                     break
                 if cell == 5 and previous_cell <= 0:
@@ -422,6 +429,42 @@ def overlay_solved_cells(partial_grid, grid):
     partial_grid = np.where(partial_grid == -1, 0, partial_grid)
     grid = grid | partial_grid
     return grid
+
+
+def solver_mark_hint_edges_empty(hints, grid, t=0):
+    if t == 1:
+        grid = np.transpose(grid)
+    for j in range(2):
+        if j == 1:
+            grid = np.flip(grid, axis=1)
+            hints = np.flip(hints, axis=1)
+        for i, row in enumerate(grid):
+            print(row)
+            flag = False
+            for cell in row:
+                if cell == 0 or cell == 5:
+                    flag = True
+                if cell == -1 and not flag:
+                    continue
+                elif cell == -1 and flag:
+                    end_index = i
+                    print(end_index)
+                    break
+                    
+            try:
+                first_hint = hints[i][np.nonzero(hints[i])[0][0]]
+            except IndexError:
+                continue
+
+
+def index_of_first_non_zero_cell(row):
+    return row[np.nonzero(row)[0][0]]
+
+
+
+
+#def length_until_next_x(row):
+
 
 
 if __name__ == "__main__":
