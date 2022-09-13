@@ -1,0 +1,115 @@
+<?xml version="1.0"?>
+<!DOCTYPE pbn SYSTEM "https://webpbn.com/pbn-0.3.dtd">
+<puzzleset>
+<source>webpbn.com</source>
+
+<puzzle type="grid" defaultcolor="black">
+<title>Hierographic</title>
+<author>harris harris</author>
+<authorid>torough4u</authorid>
+<copyright>(c) Copyright 2009 by harris harris</copyright>
+<id>#7007 (v.1)</id>
+<description>egyptian man praying to the gods</description>
+<note>published,definitely unique,definitely line/color solvable</note>
+
+<color name="white" char=".">FFFFFF</color>
+<color name="black" char="X">000000</color>
+
+<clues type="columns">
+<line></line>
+<line><count>2</count></line>
+<line><count>3</count></line>
+<line><count>2</count><count>9</count></line>
+<line><count>12</count><count>10</count></line>
+<line><count>1</count><count>11</count><count>10</count></line>
+<line><count>2</count><count>4</count><count>9</count></line>
+<line><count>4</count><count>8</count></line>
+<line><count>3</count><count>7</count></line>
+<line><count>2</count><count>3</count><count>6</count></line>
+<line><count>5</count><count>4</count><count>6</count></line>
+<line><count>5</count><count>16</count></line>
+<line><count>2</count><count>24</count></line>
+<line><count>29</count></line>
+<line><count>1</count><count>24</count></line>
+<line><count>5</count><count>16</count></line>
+<line><count>4</count><count>4</count></line>
+<line><count>3</count><count>2</count></line>
+<line><count>3</count><count>1</count></line>
+<line><count>4</count></line>
+<line><count>2</count><count>4</count></line>
+<line><count>1</count><count>11</count></line>
+<line><count>12</count></line>
+<line><count>2</count></line>
+<line></line>
+</clues>
+
+<clues type="rows">
+<line></line>
+<line><count>2</count></line>
+<line><count>1</count></line>
+<line><count>2</count><count>2</count><count>2</count></line>
+<line><count>2</count><count>1</count><count>2</count><count>1</count><count>2</count></line>
+<line><count>4</count><count>1</count><count>4</count></line>
+<line><count>2</count><count>3</count><count>2</count></line>
+<line><count>2</count><count>5</count><count>2</count></line>
+<line><count>2</count><count>6</count><count>2</count></line>
+<line><count>2</count><count>7</count><count>2</count></line>
+<line><count>2</count><count>7</count><count>2</count></line>
+<line><count>2</count><count>6</count><count>2</count></line>
+<line><count>2</count><count>1</count><count>3</count><count>2</count></line>
+<line><count>3</count><count>3</count><count>3</count></line>
+<line><count>4</count><count>5</count><count>4</count></line>
+<line><count>17</count></line>
+<line><count>15</count></line>
+<line><count>13</count></line>
+<line><count>7</count></line>
+<line><count>5</count></line>
+<line><count>2</count><count>5</count></line>
+<line><count>4</count><count>5</count></line>
+<line><count>5</count><count>5</count></line>
+<line><count>6</count><count>5</count></line>
+<line><count>13</count></line>
+<line><count>13</count></line>
+<line><count>14</count></line>
+<line><count>15</count></line>
+<line><count>17</count></line>
+<line><count>18</count></line>
+</clues>
+
+<solution type="goal">
+<image>
+|.........................|
+|.............XX..........|
+|.............X...........|
+|....XX......XX.......XX..|
+|...XX.X.....XX......X.XX.|
+|...XXXX......X......XXXX.|
+|....XX......XXX......XX..|
+|....XX.....XXXXX.....XX..|
+|....XX....XXXXXX.....XX..|
+|....XX...XXXXXXX.....XX..|
+|....XX...XXXXXXX.....XX..|
+|....XX....XXXXXX.....XX..|
+|....XX....X.XXX......XX..|
+|....XXX.....XXX.....XXX..|
+|....XXXX...XXXXX...XXXX..|
+|.....XXXXXXXXXXXXXXXXX...|
+|......XXXXXXXXXXXXXXX....|
+|.......XXXXXXXXXXXXX.....|
+|..........XXXXXXX........|
+|...........XXXXX.........|
+|....XX.....XXXXX.........|
+|...XXXX....XXXXX.........|
+|...XXXXX...XXXXX.........|
+|...XXXXXX..XXXXX.........|
+|...XXXXXXXXXXXXX.........|
+|...XXXXXXXXXXXXX.........|
+|...XXXXXXXXXXXXXX........|
+|..XXXXXXXXXXXXXXX........|
+|.XXXXXXXXXXXXXXXXX.......|
+|.XXXXXXXXXXXXXXXXXX......|
+</image>
+</solution>
+
+</puzzle>
+</puzzleset>

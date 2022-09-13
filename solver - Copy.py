@@ -6,10 +6,8 @@ import xml.etree.ElementTree as ET
 
 
 def main():
-    #file = f"{os.getcwd()}\\Plain.xml"
+    file = f"{os.getcwd()}\\Plain.xml"
     #file = f"{os.getcwd()}\\Who am I.xml"
-    file = f"{os.getcwd()}\\Hierographic.xml"
-
     row_hints, col_hints, solution_image = parse_xml(file)
     solution_grid = format_solution_image(solution_image)
     # create empty grid
@@ -20,7 +18,8 @@ def main():
     _, solution_grid = delete_blank_edges(col_hints.copy(), solution_grid.copy(), t=1)
     row_hints, grid = delete_blank_edges(row_hints.copy(), grid.copy())
     col_hints, grid = delete_blank_edges(col_hints.copy(), grid.copy(), t=1)
-    for i in range(20):
+    for _ in range(2):
+
         reduced_row_hints, reduced_grid = remove_solved_edges(
             row_hints.copy(), grid.copy()
         )
@@ -31,14 +30,14 @@ def main():
         )
         partial_grid = solver_count_and_fill(reduced_col_hints, reduced_grid, t=1)
         grid = overlay_solved_cells(partial_grid, grid.copy())
-
+        print(grid)
         grid = solver_count_from_edge(row_hints, grid.copy())
         grid = solver_count_from_edge(col_hints, grid.copy(), t=1)
         grid = solver_mark_blank_in_finished_row(row_hints, grid.copy())
         grid = solver_mark_blank_in_finished_row(col_hints, grid.copy(), t=1)
         grid = solver_mark_completed_hints_from_edge(row_hints, grid.copy())
         grid = solver_mark_completed_hints_from_edge(col_hints, grid.copy(), t=1)
-        
+
         for _ in range(5):
 
             reduced_row_hints, reduced_grid = remove_solved_edges(
@@ -46,6 +45,7 @@ def main():
             )
             partial_grid = solver_finish_first_section(reduced_row_hints, reduced_grid)
             grid = overlay_solved_cells(partial_grid, grid.copy())
+
             reduced_col_hints, reduced_grid = remove_solved_edges(
                 col_hints.copy(), grid.copy(), t=1
             )
@@ -106,8 +106,6 @@ def solver_count_and_fill(hints, grid, t=0):
     col_length, row_length = grid.shape
     grid_solution = np.zeros((col_length, row_length), dtype=int)
     for i, hint_row in enumerate(hints):
-        if i == 0:
-            pass
         new_row = np.zeros(row_length, dtype=int)
         min_length = calculate_min_length(hint_row)
         delta = length_of_unsolved_cells(grid[i]) - min_length
@@ -119,10 +117,7 @@ def solver_count_and_fill(hints, grid, t=0):
             elif solution <= 0:
                 count += hint + 1
                 continue
-            try:
-                start_index = index_of_first_non_negative_cell(grid[i])
-            except ValueError:
-                continue
+            start_index = index_of_first_non_negative_cell(grid[i])
             new_row[start_index + count + delta : start_index + count + hint] = 5
             count += hint + 1
         grid_solution[i] = new_row
@@ -134,8 +129,6 @@ def solver_count_and_fill(hints, grid, t=0):
 
 def length_of_unsolved_cells(row):
     count = 0
-    if np.all(row == -1):
-        return np.size(row)
     for j in range(2):
         if j == 1:
             row = np.flip(row)
@@ -146,6 +139,7 @@ def length_of_unsolved_cells(row):
                 break
         if j == 1:
             row = np.flip(row)
+    # print(np.size(row) - count)
     return np.size(row) - count
 
 
@@ -343,8 +337,6 @@ def sum_of_hints(row):
 
 def index_of_first_non_negative_cell(row):
     count = 0
-    if np.all(row == -1):
-        raise ValueError
     for cell in row:
         if cell < 0:
             count += 1
@@ -360,10 +352,7 @@ def solver_mark_completed_hints_from_edge(hints, grid, t=0):
             grid = np.flip(grid, axis=1)
             hints = np.flip(hints, axis=1)
         for i, hint_row in enumerate(hints):
-            try:
-                cell_index = index_of_first_non_negative_cell(grid[i])
-            except ValueError:
-                continue
+            cell_index = index_of_first_non_negative_cell(grid[i])
             for hint in hint_row:
                 if cell_index >= np.shape(grid[i])[0]:
                     continue
@@ -420,9 +409,7 @@ def remove_solved_edges(hints, grid, t=0):
             grid[i][0:cell_index] = -1
             # Set hints that have been solved to zero.
             start = index_of_first_positive_cell(hints[i])
-            if not start:
-                start = 0
-            end = hint_count + start
+            end = hint_count + index_of_first_positive_cell(hints[i])
             hints[i][start:end] = 0
         if j == 1:
             grid = np.flip(grid, axis=1)
@@ -433,22 +420,15 @@ def remove_solved_edges(hints, grid, t=0):
 
 
 def index_of_first_positive_cell(row):
-    if np.all(row <= 0):
-        return None
-    positive_cells = np.nonzero(row > 0)[0]
-    return positive_cells[0]
-
-def index_of_last_positive_continuous_cell(row):
-    if np.all(row <= 0):
-        return None
-    positive_cells = np.nonzero(row > 0)[0]
-    for i, cell in enumerate(positive_cells):
-        if i == 0:
-            previous_cell = cell
-            continue
-        if cell - previous_cell > 1:
-            return previous_cell
-        previous_cell = cell
+    cell_index = 0
+    if not np.any(row == 5):
+        return cell_index
+    for cell in row:
+        if cell <= 0:
+            cell_index += 1
+        else:
+            return cell_index
+    return cell_index
 
 
 def overlay_solved_cells(partial_grid, grid):
@@ -474,49 +454,24 @@ def solver_finish_first_section(hints, grid, t=0):
             smallest_hint = np.amin(hints[i][np.nonzero(hints[i])[0]])
             length = end_index - start_index
             section = row[start_index:end_index]
-            first_positive_cell = index_of_first_positive_cell(row)
-            last_positive_cell = index_of_last_positive_continuous_cell(row)
-            
             # Solves hint if there is at least one solved cell in section and length of section matches hint
             if length == first_hint:
                 if 5 in row[start_index:end_index]:
                     row[start_index:end_index] = 5
-            
             # Marks empty cells surrounding completed hint. Only applies if the section has one extra space
             num_of_solved_cells = np.size(np.nonzero(row[start_index:end_index] == 5))
-            if length == first_hint + 1 and first_hint == num_of_solved_cells:
+            if (
+                length == first_hint + 1
+                and first_hint == num_of_solved_cells
+            ):
                 section = np.where(section == 0, -2, section)
                 row[start_index:end_index] = section
-            
             # Marks section as empty if no remaining hint is small enough to fit
             if length < smallest_hint:
                 section = np.where(section == 0, -2, section)
                 row[start_index:end_index] = section
-            
-            # Marks empty cells that are too far away from solved cell. Only applies if there is one hint remaining
-            try:
-                if last_positive_cell > first_hint:
-                    if np.size(np.nonzero(hints[i] > 0)[0]) == 1:
-                        row[
-                            start_index : last_positive_cell
-                            - first_hint
-                        ] = -2
-            except TypeError:
-                pass
-            
-            # Mark first cell of section empty
-            try:
-                if first_positive_cell == first_hint:
-                    row[start_index] = -2
-            except TypeError:
-                pass
-            
-            # Fill in cells between solved cells if only one hint remains
-            # Will probably become obsolete with future algorithm
-            if np.size(np.nonzero(hints[i] > 0)[0]) == 1 and last_positive_cell:
-                index_to_fill = row[first_positive_cell:last_positive_cell]
-                row[first_positive_cell:last_positive_cell] = np.where(index_to_fill == 0, 5, index_to_fill)
-            
+            if index_of_first_positive_cell(row) - start_index > first_hint:
+                row[start_index:start_index + index_of_first_positive_cell(row) - first_hint] = -1
         if j == 1:
             grid = np.flip(grid, axis=1)
             hints = np.flip(hints, axis=1)
@@ -524,13 +479,12 @@ def solver_finish_first_section(hints, grid, t=0):
         grid = np.transpose(grid)
     return grid
 
-
 def index_of_first_section(row):
     start_index = 0
     end_index = np.size(row)
     flag = False
     for k, cell in enumerate(row):
-        if cell == 0 or cell == 5:
+        if cell == 0:
             if not flag:
                 start_index = k
             flag = True
