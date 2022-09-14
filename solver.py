@@ -6,8 +6,8 @@ import xml.etree.ElementTree as ET
 
 
 def main():
-    #file = f"{os.getcwd()}\\Plain.xml"
-    #file = f"{os.getcwd()}\\Who am I.xml"
+    file = f"{os.getcwd()}\\Plain.xml"
+    file = f"{os.getcwd()}\\Who am I.xml"
     file = f"{os.getcwd()}\\Hierographic.xml"
 
     row_hints, col_hints, solution_image = parse_xml(file)
@@ -16,11 +16,13 @@ def main():
     grid = np.full((len(row_hints), len(col_hints)), 0)
     grid = mark_empty(row_hints, grid.copy())
     grid = mark_empty(col_hints, grid.copy(), t=1)
+    """
     _, solution_grid = delete_blank_edges(row_hints.copy(), solution_grid.copy())
     _, solution_grid = delete_blank_edges(col_hints.copy(), solution_grid.copy(), t=1)
     row_hints, grid = delete_blank_edges(row_hints.copy(), grid.copy())
     col_hints, grid = delete_blank_edges(col_hints.copy(), grid.copy(), t=1)
-    for i in range(20):
+    """
+    for i in range(1):
         reduced_row_hints, reduced_grid = remove_solved_edges(
             row_hints.copy(), grid.copy()
         )
@@ -39,7 +41,7 @@ def main():
         grid = solver_mark_completed_hints_from_edge(row_hints, grid.copy())
         grid = solver_mark_completed_hints_from_edge(col_hints, grid.copy(), t=1)
         
-        for _ in range(5):
+        for _ in range(2):
 
             reduced_row_hints, reduced_grid = remove_solved_edges(
                 row_hints.copy(), grid.copy()
@@ -438,6 +440,13 @@ def index_of_first_positive_cell(row):
     positive_cells = np.nonzero(row > 0)[0]
     return positive_cells[0]
 
+def index_of_last_positive_cell(row):
+    if np.all(row <= 0):
+        return None
+    positive_cells = np.nonzero(row > 0)[0]
+    return positive_cells[-1]
+
+
 def index_of_last_positive_continuous_cell(row):
     if np.all(row <= 0):
         return None
@@ -449,6 +458,7 @@ def index_of_last_positive_continuous_cell(row):
         if cell - previous_cell > 1:
             return previous_cell
         previous_cell = cell
+    return previous_cell
 
 
 def overlay_solved_cells(partial_grid, grid):
@@ -475,7 +485,8 @@ def solver_finish_first_section(hints, grid, t=0):
             length = end_index - start_index
             section = row[start_index:end_index]
             first_positive_cell = index_of_first_positive_cell(row)
-            last_positive_cell = index_of_last_positive_continuous_cell(row)
+            last_positive_continuous_cell = index_of_last_positive_continuous_cell(row)
+            last_positive_cell = index_of_last_positive_cell(row)
             
             # Solves hint if there is at least one solved cell in section and length of section matches hint
             if length == first_hint:
@@ -494,23 +505,24 @@ def solver_finish_first_section(hints, grid, t=0):
                 row[start_index:end_index] = section
             
             # Marks empty cells that are too far away from solved cell. Only applies if there is one hint remaining
+            # Error
             try:
-                if last_positive_cell > first_hint:
+                if last_positive_continuous_cell - start_index > first_hint:
                     if np.size(np.nonzero(hints[i] > 0)[0]) == 1:
                         row[
-                            start_index : last_positive_cell
+                            start_index : last_positive_continuous_cell
                             - first_hint
                         ] = -2
             except TypeError:
                 pass
-            
+            """
             # Mark first cell of section empty
             try:
                 if first_positive_cell == first_hint:
                     row[start_index] = -2
             except TypeError:
                 pass
-            
+            """
             # Fill in cells between solved cells if only one hint remains
             # Will probably become obsolete with future algorithm
             if np.size(np.nonzero(hints[i] > 0)[0]) == 1 and last_positive_cell:
