@@ -1,0 +1,150 @@
+<?xml version="1.0"?>
+<!DOCTYPE pbn SYSTEM "https://webpbn.com/pbn-0.3.dtd">
+<puzzleset>
+<source>webpbn.com</source>
+
+<puzzle type="grid" defaultcolor="black">
+<title>Small Axe</title>
+<author>Chuck Martin</author>
+<authorid></authorid>
+<copyright>(c) Copyright 2014 by Chuck Martin</copyright>
+<id>#25615 (v.1)</id>
+<description>(This puzzle was recovered from the 2016 database crash. Description not available.)</description>
+<note>published,definitely unique,definitely requires moderate lookahead</note>
+
+<color name="white" char=".">FFFFFF</color>
+<color name="black" char="X">000000</color>
+
+<clues type="columns">
+<line><count>1</count></line>
+<line><count>2</count><count>1</count><count>2</count><count>2</count><count>16</count></line>
+<line><count>1</count><count>1</count><count>1</count><count>5</count><count>5</count><count>4</count><count>12</count></line>
+<line><count>1</count><count>1</count><count>1</count><count>1</count><count>4</count><count>2</count><count>10</count></line>
+<line><count>2</count><count>1</count><count>6</count><count>7</count></line>
+<line><count>1</count><count>9</count><count>7</count></line>
+<line><count>5</count><count>13</count><count>3</count></line>
+<line><count>1</count><count>19</count><count>1</count><count>2</count><count>3</count><count>4</count></line>
+<line><count>1</count><count>3</count><count>1</count><count>1</count><count>1</count><count>1</count><count>1</count><count>1</count><count>2</count><count>3</count><count>4</count></line>
+<line><count>5</count><count>1</count><count>3</count><count>1</count><count>1</count><count>1</count><count>1</count><count>1</count><count>1</count><count>1</count><count>1</count><count>1</count><count>1</count><count>2</count><count>3</count><count>6</count></line>
+<line><count>1</count><count>1</count><count>1</count><count>5</count><count>1</count><count>1</count><count>1</count><count>1</count><count>1</count><count>1</count><count>2</count><count>3</count><count>4</count><count>1</count></line>
+<line><count>2</count><count>2</count><count>4</count><count>19</count><count>1</count><count>2</count><count>3</count><count>4</count><count>1</count></line>
+<line><count>4</count><count>1</count><count>12</count><count>3</count><count>1</count></line>
+<line><count>4</count><count>3</count><count>1</count><count>9</count><count>6</count><count>1</count></line>
+<line><count>1</count><count>1</count><count>2</count><count>1</count><count>7</count><count>6</count><count>1</count></line>
+<line><count>4</count><count>2</count><count>7</count><count>10</count><count>1</count></line>
+<line><count>2</count><count>9</count><count>3</count><count>1</count></line>
+<line><count>1</count><count>5</count><count>15</count><count>1</count></line>
+<line><count>5</count><count>1</count><count>4</count></line>
+<line><count>1</count><count>5</count></line>
+</clues>
+
+<clues type="rows">
+<line><count>3</count><count>3</count><count>3</count><count>1</count><count>3</count></line>
+<line><count>1</count><count>1</count><count>1</count><count>1</count><count>1</count><count>1</count><count>1</count></line>
+<line><count>1</count><count>1</count><count>2</count><count>3</count><count>1</count></line>
+<line><count>1</count><count>1</count><count>1</count><count>1</count><count>1</count><count>1</count><count>1</count><count>1</count></line>
+<line><count>2</count><count>1</count><count>1</count><count>1</count><count>1</count><count>1</count><count>1</count></line>
+<line></line>
+<line></line>
+<line><count>3</count></line>
+<line><count>1</count><count>1</count></line>
+<line><count>1</count><count>1</count><count>3</count></line>
+<line><count>2</count><count>1</count><count>4</count></line>
+<line><count>2</count><count>1</count><count>4</count></line>
+<line><count>4</count><count>1</count></line>
+<line><count>4</count><count>1</count></line>
+<line><count>3</count><count>1</count></line>
+<line><count>2</count><count>2</count></line>
+<line><count>1</count><count>1</count></line>
+<line><count>5</count></line>
+<line><count>1</count><count>1</count></line>
+<line><count>1</count><count>1</count><count>1</count></line>
+<line><count>3</count><count>1</count><count>1</count><count>2</count></line>
+<line><count>1</count><count>5</count><count>1</count></line>
+<line><count>1</count><count>1</count><count>1</count><count>1</count></line>
+<line><count>2</count><count>1</count><count>1</count><count>1</count><count>3</count></line>
+<line><count>2</count><count>1</count><count>1</count><count>3</count></line>
+<line><count>5</count></line>
+<line><count>1</count><count>1</count></line>
+<line><count>1</count><count>1</count><count>1</count></line>
+<line><count>2</count><count>1</count><count>1</count></line>
+<line><count>3</count><count>5</count><count>3</count></line>
+<line><count>4</count><count>1</count><count>1</count><count>4</count></line>
+<line><count>7</count><count>1</count><count>1</count><count>4</count></line>
+<line><count>1</count><count>4</count><count>7</count></line>
+<line><count>1</count><count>14</count></line>
+<line><count>6</count><count>6</count></line>
+<line><count>17</count></line>
+<line><count>2</count><count>2</count><count>2</count><count>2</count></line>
+<line><count>3</count><count>9</count><count>3</count></line>
+<line><count>3</count><count>9</count><count>1</count><count>1</count></line>
+<line><count>3</count><count>2</count><count>2</count><count>1</count><count>1</count></line>
+<line><count>3</count><count>8</count><count>1</count><count>1</count></line>
+<line><count>12</count><count>1</count><count>1</count></line>
+<line><count>15</count><count>1</count></line>
+<line><count>6</count><count>6</count></line>
+<line><count>5</count><count>5</count><count>5</count></line>
+<line><count>15</count><count>1</count></line>
+<line><count>13</count><count>2</count></line>
+<line><count>11</count><count>2</count></line>
+<line><count>1</count><count>4</count></line>
+<line><count>7</count><count>2</count></line>
+</clues>
+
+<solution type="goal">
+<image>
+|.XXX.XXX.XXX..X..XXX|
+|.X....X..X.X.X.X..X.|
+|..X...X..XX..XXX..X.|
+|X..X..X..X.X.X.X..X.|
+|.XX...X..X.X.X.X..X.|
+|....................|
+|....................|
+|..XXX...............|
+|..X.X...............|
+|..X.......X.XXX.....|
+|.XX......X.XXXX.....|
+|.XX.....X.XXXX......|
+|.........XXXX.X.....|
+|........XXXX.X......|
+|........XXX.X.......|
+|.......XX.XX........|
+|.......X...X........|
+|.......XXXXX........|
+|.......X...X........|
+|.......X.X.X........|
+|..XXX..X...X.....XX.|
+|..X....XXXXX.....X..|
+|..X....X...X.....X..|
+|.XX....X.X.X...XXX..|
+|.XX....X...X...XXX..|
+|.......XXXXX........|
+|.......X...X........|
+|.......X.X.X........|
+|..XX...X...X........|
+|.XXX...XXXXX..XXX...|
+|.XXXX..X...X..XXXX..|
+|.XXXXXXX.X.X..XXXX..|
+|.X..XXXX...XXXXXXX..|
+|.X..XXXXXXXXXXXXXX..|
+|.XXXXXX.....XXXXXX..|
+|.XXXXXXXXXXXXXXXXX..|
+|.XX..XX.....XX..XX..|
+|.XXX.XXXXXXXXX.XXX..|
+|.XXX.XXXXXXXXX.X.X..|
+|.XXX.XX.....XX.X.X..|
+|.XXX..XXXXXXXX.X.X..|
+|.XXXXXXXXXXXX..X.X..|
+|.XXXXXXXXXXXXXXX.X..|
+|.XXXXXX.....XXXXXX..|
+|.XXXXX.XXXXX.XXXXX..|
+|..XXXXXXXXXXXXXXX..X|
+|...XXXXXXXXXXXXX..XX|
+|....XXXXXXXXXXX...XX|
+|.........X......XXXX|
+|.........XXXXXXX..XX|
+</image>
+</solution>
+
+</puzzle>
+</puzzleset>

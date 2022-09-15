@@ -6,10 +6,10 @@ import xml.etree.ElementTree as ET
 
 
 def main():
-    file = f"{os.getcwd()}\\Plain.xml"
-    file = f"{os.getcwd()}\\Who am I.xml"
-    #file = f"{os.getcwd()}\\Hierographic.xml"
-    file = f"{os.getcwd()}\\Engarde!.xml"
+    file = f"{os.getcwd()}\\Small Axe.xml"
+    # file = f"{os.getcwd()}\\Who am I.xml"
+    # file = f"{os.getcwd()}\\Hierographic.xml"
+    # file = f"{os.getcwd()}\\Engarde!.xml"
 
     row_hints, col_hints, solution_image = parse_xml(file)
     solution_grid = format_solution_image(solution_image)
@@ -17,13 +17,13 @@ def main():
     grid = np.full((len(row_hints), len(col_hints)), 0)
     grid = mark_empty(row_hints, grid.copy())
     grid = mark_empty(col_hints, grid.copy(), t=1)
-    
+
     _, solution_grid = delete_blank_edges(row_hints.copy(), solution_grid.copy())
     _, solution_grid = delete_blank_edges(col_hints.copy(), solution_grid.copy(), t=1)
     row_hints, grid = delete_blank_edges(row_hints.copy(), grid.copy())
     col_hints, grid = delete_blank_edges(col_hints.copy(), grid.copy(), t=1)
-    
-    for i in range(10):
+
+    for i in range(20):
 
         reduced_row_hints, reduced_grid = remove_solved_edges(
             row_hints.copy(), grid.copy()
@@ -47,26 +47,25 @@ def main():
             col_hints.copy(), grid.copy(), t=1
         )
         partial_grid = solver_count_from_edge(reduced_col_hints, reduced_grid, t=1)
+
         grid = overlay_solved_cells(partial_grid, grid.copy())
-
-
         grid = solver_mark_blank_in_finished_row(row_hints, grid.copy())
         grid = solver_mark_blank_in_finished_row(col_hints, grid.copy(), t=1)
         grid = solver_mark_completed_hints_from_edge(row_hints, grid.copy())
         grid = solver_mark_completed_hints_from_edge(col_hints, grid.copy(), t=1)
-        #verify_grid_solution(grid, solution_grid)
-        #print("i = ", i)
+        # verify_grid_solution(grid, solution_grid)
+        # print("i = ", i)
         for _ in range(5):
             if _ == 0:
                 pass
-            #print(_)
+            # print(_)
 
             reduced_row_hints, reduced_grid = remove_solved_edges(
                 row_hints.copy(), grid.copy()
             )
             partial_grid = solver_finish_first_section(reduced_row_hints, reduced_grid)
             grid = overlay_solved_cells(partial_grid, grid.copy())
-            #verify_grid_solution(grid, solution_grid)   
+            # verify_grid_solution(grid, solution_grid)
 
             reduced_col_hints, reduced_grid = remove_solved_edges(
                 col_hints.copy(), grid.copy(), t=1
@@ -75,8 +74,7 @@ def main():
                 reduced_col_hints, reduced_grid, t=1
             )
             grid = overlay_solved_cells(partial_grid, grid.copy())
-            #verify_grid_solution(grid, solution_grid)
-
+            # verify_grid_solution(grid, solution_grid)
 
     puzzle, image = convert_grid_to_image(row_hints, col_hints, grid)
     print(puzzle)
@@ -213,10 +211,10 @@ def solver_count_from_edge(hints, grid, t=0):
         if j == 1:
             grid = np.flip(grid, axis=1)
             hints = np.flip(hints, axis=1)
-        for i, hint_row in enumerate(hints):
+        for i, row in enumerate(hints):
             if np.all(grid[i] <= 0):
-                break
-            first_hint = hint_row[np.nonzero(hint_row)][0]
+                continue
+            first_hint = row[np.nonzero(row)][0]
             filled_cell_indices = np.nonzero(grid[i] > 0)
             first_filled_cell = filled_cell_indices[0][0]
             offset = index_of_first_non_negative_cell(grid[i])
@@ -447,7 +445,8 @@ def remove_solved_edges(hints, grid, t=0):
                 if (
                     hint_count == 1
                     and index_of_last_positive_continuous_cell(row)
-                    - index_of_first_positive_cell(row) + 1
+                    - index_of_first_positive_cell(row)
+                    + 1
                     == hints[i][start]
                 ):
                     hints[i][start:end] = 0
@@ -535,31 +534,32 @@ def solver_finish_first_section(hints, grid, t=0):
             if length < smallest_hint:
                 section = np.where(section == 0, -2, section)
                 row[start_index:end_index] = section
-            
+
             # Marks empty cells that are too far away from solved cell. Only applies if there is one hint remaining
             try:
                 if last_positive_continuous_cell - start_index > first_hint:
                     if np.size(np.nonzero(hints[i] > 0)[0]) == 1:
                         row[
-                            start_index : last_positive_continuous_cell
-                            - first_hint
+                            start_index : last_positive_continuous_cell - first_hint
                         ] = -2
             except TypeError:
                 pass
-            
-            # Mark first cell of section empty
+
+            # Mark first cell of section empty if hint must be at least one space away from edge
             try:
                 if last_positive_continuous_cell == first_hint + start_index:
                     row[start_index] = -2
             except TypeError:
                 pass
-            
+
             # Fill in cells between solved cells if only one hint remains
             # Will probably become obsolete with future algorithm
             if np.size(np.nonzero(hints[i] > 0)[0]) == 1 and last_positive_cell:
                 index_to_fill = row[first_positive_cell:last_positive_cell]
-                row[first_positive_cell:last_positive_cell] = np.where(index_to_fill == 0, 5, index_to_fill)
-            
+                row[first_positive_cell:last_positive_cell] = np.where(
+                    index_to_fill == 0, 5, index_to_fill
+                )
+
         if j == 1:
             grid = np.flip(grid, axis=1)
             hints = np.flip(hints, axis=1)
