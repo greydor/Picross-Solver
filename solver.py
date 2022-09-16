@@ -23,8 +23,8 @@ def main():
     row_hints, grid = delete_blank_edges(row_hints.copy(), grid.copy())
     col_hints, grid = delete_blank_edges(col_hints.copy(), grid.copy(), t=1)
 
-    for i in range(20):
-
+    for i in range(10):
+        print("i = ", i)
         reduced_row_hints, reduced_grid = remove_solved_edges(
             row_hints.copy(), grid.copy()
         )
@@ -47,25 +47,56 @@ def main():
             col_hints.copy(), grid.copy(), t=1
         )
         partial_grid = solver_count_from_edge(reduced_col_hints, reduced_grid, t=1)
-
         grid = overlay_solved_cells(partial_grid, grid.copy())
-        grid = solver_mark_blank_in_finished_row(row_hints, grid.copy())
-        grid = solver_mark_blank_in_finished_row(col_hints, grid.copy(), t=1)
-        grid = solver_mark_completed_hints_from_edge(row_hints, grid.copy())
-        grid = solver_mark_completed_hints_from_edge(col_hints, grid.copy(), t=1)
-        # verify_grid_solution(grid, solution_grid)
-        # print("i = ", i)
+
+        # grid = solver_mark_blank_in_finished_row(row_hints, grid.copy())
+        # grid = solver_mark_blank_in_finished_row(col_hints, grid.copy(), t=1)
+
+        reduced_row_hints, reduced_grid = remove_solved_edges(
+            row_hints.copy(), grid.copy()
+        )
+        partial_grid = solver_mark_blank_in_finished_row(
+            reduced_row_hints, reduced_grid
+        )
+        grid = overlay_solved_cells(partial_grid, grid.copy())
+
+        reduced_col_hints, reduced_grid = remove_solved_edges(
+            col_hints.copy(), grid.copy(), t=1
+        )
+        partial_grid = solver_mark_blank_in_finished_row(
+            reduced_col_hints, reduced_grid, t=1
+        )
+        grid = overlay_solved_cells(partial_grid, grid.copy())
+
+        reduced_row_hints, reduced_grid = remove_solved_edges(
+            row_hints.copy(), grid.copy()
+        )
+        partial_grid = solver_mark_completed_hints_from_edge(
+            reduced_row_hints, reduced_grid
+        )
+        grid = overlay_solved_cells(partial_grid, grid.copy())
+
+        reduced_col_hints, reduced_grid = remove_solved_edges(
+            col_hints.copy(), grid.copy(), t=1
+        )
+        partial_grid = solver_mark_completed_hints_from_edge(
+            reduced_col_hints, reduced_grid, t=1
+        )
+        grid = overlay_solved_cells(partial_grid, grid.copy())
+
+        verify_grid_solution(grid, solution_grid)
+
         for _ in range(5):
             if _ == 0:
                 pass
-            # print(_)
+            print(_)
 
             reduced_row_hints, reduced_grid = remove_solved_edges(
                 row_hints.copy(), grid.copy()
             )
             partial_grid = solver_finish_first_section(reduced_row_hints, reduced_grid)
             grid = overlay_solved_cells(partial_grid, grid.copy())
-            # verify_grid_solution(grid, solution_grid)
+            verify_grid_solution(grid, solution_grid)
 
             reduced_col_hints, reduced_grid = remove_solved_edges(
                 col_hints.copy(), grid.copy(), t=1
@@ -74,12 +105,20 @@ def main():
                 reduced_col_hints, reduced_grid, t=1
             )
             grid = overlay_solved_cells(partial_grid, grid.copy())
-            # verify_grid_solution(grid, solution_grid)
+            verify_grid_solution(grid, solution_grid)
 
     puzzle, image = convert_grid_to_image(row_hints, col_hints, grid)
     print(puzzle)
     verify_grid_solution(grid, solution_grid)
     puzzle.to_excel("puzzle.xlsx")
+
+
+def transpose(func):
+    def wrapper(hints, grid):
+        
+        func(hints, grid)
+        
+        return wrapper
 
 
 def process_csv(csv_file):
@@ -212,7 +251,7 @@ def solver_count_from_edge(hints, grid, t=0):
             grid = np.flip(grid, axis=1)
             hints = np.flip(hints, axis=1)
         for i, row in enumerate(hints):
-            if np.all(grid[i] <= 0):
+            if np.all(grid[i] <= 0) or np.size(grid[i] == 0):
                 continue
             first_hint = row[np.nonzero(row)][0]
             filled_cell_indices = np.nonzero(grid[i] > 0)
@@ -345,10 +384,9 @@ def delete_blank_edges(hints, grid, t=0):
 def solver_mark_blank_in_finished_row(hints, grid, t=0):
     if t == 1:
         grid = np.transpose(grid)
-    _, row_length = grid.shape
     for i, hint_row in enumerate(hints):
         if sum_of_hints(hint_row) == np.count_nonzero(grid[i] == 5):
-            grid[i] = np.where(grid[i] == 0, -1, grid[i])
+            grid[i] = np.where(grid[i] == 0, -2, grid[i])
     if t == 1:
         grid = np.transpose(grid)
     return grid
@@ -425,19 +463,50 @@ def remove_solved_edges(hints, grid, t=0):
             grid = np.flip(grid, axis=1)
             hints = np.flip(hints, axis=1)
         for i, row in enumerate(grid):
+            try:
+                first_hint = hints[i][np.nonzero(hints[i])[0][0]]
+            except IndexError:
+                continue
+            current_hint_index = index_of_first_positive_cell(hints[i])
             previous_cell = -1
             hint_count = 0
+            continuous_cells = 0
             for cell_index, cell in enumerate(row):
                 if cell == 0 and previous_cell != 5:
                     break
-                if cell == 5 or cell == -1:
-                    cell_index += 1
+
                 if cell == 5 and previous_cell <= 0:
+                    continuous_cells = 1
+                    flag = cell_index
+                elif cell == 5 and previous_cell == 5:
+                    continuous_cells += 1
+
+                if cell == -1 and previous_cell == 5:
                     hint_count += 1
+                    current_hint_index += 1
+                    flag = cell_index
+                if cell == 0 and previous_cell == 5:
+                    try:
+                        current_hint = hints[i][current_hint_index]
+                    except IndexError:
+                        pass
+
+                    if continuous_cells == current_hint:
+                        hint_count += 1
+                        flag = cell_index
+                    break
+                if cell_index + 1 == np.size(row):
+                    flag = cell_index + 1
+                    hint_count += 1
+                    break
+
                 previous_cell = cell
             # Set continuous solved grid cells from edges to -1
             # Set hints that have been solved to zero.
-            start = index_of_first_positive_cell(hints[i])
+            try:
+                start = index_of_first_positive_cell(hints[i])
+            except IndexError:
+                start = 0
             if not start:
                 start = 0
             end = hint_count + start
@@ -450,11 +519,11 @@ def remove_solved_edges(hints, grid, t=0):
                     == hints[i][start]
                 ):
                     hints[i][start:end] = 0
-                    grid[i][0:cell_index] = -1
+                    grid[i][0:flag] = -1
                 elif hint_count > 1:
                     hints[i][start:end] = 0
-                    grid[i][0:cell_index] = -1
-            except TypeError:
+                    grid[i][0:flag] = -1
+            except (TypeError, IndexError):
                 pass
         if j == 1:
             grid = np.flip(grid, axis=1)
@@ -563,12 +632,17 @@ def solver_finish_first_section(hints, grid, t=0):
 
             # Marks edges of completed hint if it matches the largest hint
             try:
-                if last_positive_continuous_cell - first_positive_cell + 1 == np.amax(hints[i]):
+                if last_positive_continuous_cell - first_positive_cell + 1 == np.amax(
+                    hints[i]
+                ):
                     try:
                         row[first_positive_cell - 1] = -2
                     except IndexError:
                         pass
-                    row[last_positive_continuous_cell + 1] = -2
+                    try:
+                        row[last_positive_continuous_cell + 1] = -2
+                    except IndexError:
+                        pass
             except TypeError:
                 pass
 
