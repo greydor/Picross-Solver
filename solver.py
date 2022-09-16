@@ -525,6 +525,7 @@ def solver_finish_first_section(hints, grid, t=0):
                     row[start_index:end_index] = 5
 
             # Marks empty cells surrounding completed hint. Only applies if the section has one extra space
+            # Will probably become obsolete with future algorithm
             num_of_solved_cells = np.size(np.nonzero(row[start_index:end_index] == 5))
             if length == first_hint + 1 and first_hint == num_of_solved_cells:
                 section = np.where(section == 0, -2, section)
@@ -559,6 +560,17 @@ def solver_finish_first_section(hints, grid, t=0):
                 row[first_positive_cell:last_positive_cell] = np.where(
                     index_to_fill == 0, 5, index_to_fill
                 )
+
+            # Marks edges of completed hint if it matches the largest hint
+            try:
+                if last_positive_continuous_cell - first_positive_cell + 1 == np.amax(hints[i]):
+                    try:
+                        row[first_positive_cell - 1] = -2
+                    except IndexError:
+                        pass
+                    row[last_positive_continuous_cell + 1] = -2
+            except TypeError:
+                pass
 
         if j == 1:
             grid = np.flip(grid, axis=1)
