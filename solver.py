@@ -12,6 +12,7 @@ def main():
     # file = f"{os.getcwd()}\\Engarde!.xml"
     # file = f"{os.getcwd()}\\Backyard Scene.xml"
 
+
     row_hints, col_hints, solution_image = parse_xml(file)
     solution_grid = format_solution_image(solution_image)
     # create empty grid
@@ -213,6 +214,15 @@ def solve_count_from_edge(hints, grid):
 
 
 def parse_xml(file):
+    
+    """_summary_
+
+    Args:
+        file (xml): puzzle including hints and solution formatted as described here: https://webpbn.com/pbn_fmt.html
+
+    Returns:
+        _type_: _description_
+    """
     row_hints = []
     col_hints = []
     # use ElementTree to parse clues in file
