@@ -1,0 +1,120 @@
+<?xml version="1.0"?>
+<!DOCTYPE pbn SYSTEM "https://webpbn.com/pbn-0.3.dtd">
+<puzzleset>
+<source>webpbn.com</source>
+
+<puzzle type="grid" defaultcolor="black">
+<title>Backyard Scene</title>
+<author>Teresa K</author>
+<authorid>fasstar</authorid>
+<copyright>(c) Copyright 2008 by Teresa K</copyright>
+<id>#4154 (v.1)</id>
+<description>Patio with mountain view, a good book, and iced tea for two.</description>
+<note>published,definitely unique,definitely line/color solvable</note>
+
+<color name="white" char=".">FFFFFF</color>
+<color name="black" char="X">000000</color>
+
+<clues type="columns">
+<line><count>8</count><count>10</count></line>
+<line><count>8</count><count>7</count></line>
+<line><count>8</count><count>1</count><count>3</count></line>
+<line><count>8</count><count>1</count><count>3</count></line>
+<line><count>9</count><count>1</count><count>4</count></line>
+<line><count>10</count><count>4</count></line>
+<line><count>6</count><count>1</count><count>4</count></line>
+<line><count>5</count><count>3</count></line>
+<line><count>7</count><count>1</count></line>
+<line><count>10</count><count>3</count></line>
+<line><count>9</count><count>4</count></line>
+<line><count>9</count><count>4</count></line>
+<line><count>8</count><count>4</count></line>
+<line><count>8</count><count>5</count></line>
+<line><count>7</count><count>5</count></line>
+<line><count>7</count><count>4</count></line>
+<line><count>6</count><count>8</count></line>
+<line><count>6</count><count>1</count><count>1</count></line>
+<line><count>6</count><count>1</count><count>1</count></line>
+<line><count>6</count><count>9</count></line>
+<line><count>6</count><count>1</count><count>2</count></line>
+<line><count>7</count><count>1</count><count>2</count></line>
+<line><count>8</count><count>9</count></line>
+<line><count>9</count><count>4</count></line>
+<line><count>9</count><count>4</count></line>
+<line><count>9</count><count>1</count><count>2</count></line>
+<line><count>8</count><count>2</count><count>2</count></line>
+<line><count>8</count><count>2</count><count>2</count></line>
+<line><count>8</count><count>2</count><count>2</count></line>
+<line><count>8</count><count>2</count><count>2</count></line>
+<line><count>8</count><count>2</count><count>2</count></line>
+<line><count>9</count><count>2</count><count>2</count></line>
+<line><count>10</count><count>2</count><count>3</count></line>
+<line><count>10</count><count>6</count></line>
+<line><count>10</count><count>5</count></line>
+<line><count>3</count><count>4</count><count>3</count></line>
+<line><count>2</count><count>3</count><count>5</count></line>
+<line><count>4</count><count>2</count><count>5</count></line>
+<line><count>7</count></line>
+<line><count>7</count></line>
+<line><count>7</count></line>
+<line><count>8</count></line>
+<line><count>6</count><count>1</count></line>
+<line><count>4</count><count>4</count><count>4</count></line>
+<line><count>5</count><count>1</count><count>4</count></line>
+<line><count>8</count><count>1</count><count>4</count></line>
+<line><count>6</count><count>1</count><count>3</count></line>
+<line><count>6</count><count>1</count><count>3</count></line>
+<line><count>4</count><count>7</count></line>
+<line><count>4</count><count>10</count></line>
+</clues>
+
+<clues type="rows">
+<line><count>45</count></line>
+<line><count>46</count></line>
+<line><count>36</count><count>11</count></line>
+<line><count>35</count><count>13</count></line>
+<line><count>35</count><count>5</count><count>6</count></line>
+<line><count>7</count><count>28</count><count>5</count><count>5</count></line>
+<line><count>6</count><count>8</count><count>15</count><count>5</count><count>5</count></line>
+<line><count>6</count><count>5</count><count>14</count><count>1</count><count>1</count><count>3</count></line>
+<line><count>2</count><count>3</count><count>3</count><count>5</count><count>1</count><count>2</count></line>
+<line><count>2</count><count>2</count><count>3</count><count>1</count><count>1</count></line>
+<line><count>1</count><count>1</count><count>4</count><count>1</count><count>1</count><count>1</count></line>
+<line><count>1</count><count>1</count><count>4</count><count>1</count><count>1</count><count>1</count><count>1</count></line>
+<line><count>2</count><count>1</count><count>1</count><count>1</count><count>1</count><count>1</count><count>2</count></line>
+<line><count>2</count><count>1</count><count>1</count><count>1</count><count>2</count></line>
+<line><count>6</count><count>1</count><count>1</count><count>1</count><count>9</count><count>6</count></line>
+<line><count>2</count><count>1</count><count>6</count><count>1</count><count>16</count><count>1</count><count>2</count></line>
+<line><count>7</count><count>7</count><count>1</count><count>3</count><count>5</count><count>7</count></line>
+<line><count>7</count><count>8</count><count>19</count><count>7</count></line>
+<line><count>5</count><count>1</count><count>26</count><count>2</count><count>1</count><count>5</count></line>
+<line><count>1</count><count>1</count><count>1</count><count>2</count><count>2</count><count>2</count><count>2</count><count>1</count><count>1</count><count>1</count></line>
+</clues>
+
+<solution type="goal">
+<image>
+|XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.....|
+|XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX....|
+|XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX.XXXXXXXXXXX..|
+|XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX..XXXXXXXXXXXXX|
+|XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX...XXXXX.XXXXXX|
+|XXXXXXX.XXXXXXXXXXXXXXXXXXXXXXXXXXXX..XXXXX..XXXXX|
+|XXXXXX..XXXXXXXX.....XXXXXXXXXXXXXXX.XXXXX...XXXXX|
+|XXXXXX...XXXXX........XXXXXXXXXXXXXX.X...X...XXX..|
+|....XX...XXX...........XXX.....XXXXX......X.XX....|
+|.....XX.XX......................XXX.X......X......|
+|X......X...........XXXX.............X......X.....X|
+|X......X........XXXX..X.............X......X.....X|
+|XX.....X........X..X..X....................X....XX|
+|XX..............X..X..X.........................XX|
+|XXXXXX..........X..X..X...XXXXXXXXX.........XXXXXX|
+|XX...X.....XXXXXX..X..XXXXXXXXXXXXXXXX......X...XX|
+|XXXXXXX...XXXXXXX..X..XXX........XXXXX.....XXXXXXX|
+|XXXXXXX..XXXXXXXX..XXXXXXXXXXXXXXXXXXX.....XXXXXXX|
+|XXXXX.X..XXXXXXXXXXXXXXXXXXXXXXXXXX.XX.....X.XXXXX|
+|X...X.X..XX..XX.................XX..XX.....X.X...X|
+</image>
+</solution>
+
+</puzzle>
+</puzzleset>
