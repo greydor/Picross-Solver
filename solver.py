@@ -8,14 +8,13 @@ import xml.etree.ElementTree as ET
 def main():
     file = f"{os.getcwd()}\\Small Axe.xml"
     # file = f"{os.getcwd()}\\Who am I.xml"
-    # file = f"{os.getcwd()}\\Hierographic.xml"
+    file = f"{os.getcwd()}\\Hierographic.xml"
     # file = f"{os.getcwd()}\\Engarde!.xml"
     # file = f"{os.getcwd()}\\Backyard Scene.xml"
 
-
     row_hints, col_hints, solution_image = parse_xml(file)
     solution_grid = format_solution_image(solution_image)
-    # create empty grid
+    # Create empty grid
     grid = np.full((len(row_hints), len(col_hints)), 0)
     grid = mark_empty(row_hints, grid.copy())
     grid = mark_empty(col_hints, grid.copy(), transpose=True)
@@ -56,6 +55,30 @@ def main():
 
 
 def process_grid(func):
+    """Wraps function in commonly used grid manipulation algorithms to aid in solving.
+
+    Performs these steps in order:
+    Optionally transposes the grid.
+    Optionally removes solved edges from the grid and hints.
+    Applies a solving function to a copied version of the grid.
+    Overlays newly solved cells onto the input grid.
+    Undo changes to the grid that were made at the start and returns updated grid.
+
+    Args:
+        hints (np.ndarray): Array of row or column hints.
+        grid (np.ndarray): Array of currently solved puzzle grid.
+        transpose (bool, optional): If True, the input grid will be transposed.
+            If the input hint array corresponds to rows, this must be set to False.
+            If the input hint array corresponds to columns, this must be set to True.
+            Defaults to False.
+        reduce (bool, optional):
+            If True, simplifies the input arrays by removing solved cells around the edge of the grid.
+            Defaults to True.
+
+    Returns:
+        np.ndarray: Array of currently solved puzzle grid after applying function.
+    """
+
     def wrapper(hints, grid, transpose=False, reduce=True):
         if transpose:
             grid = np.transpose(grid)
@@ -176,8 +199,8 @@ def length_of_unsolved_cells(row):
     return np.size(row) - count
 
 
-# calculates the minimum length of the row solution
 def calculate_min_length(row):
+    """Returns minimum length of the solved cells if they are as close together as possible"""
     count = 0
     min_length = 0
     for hint in row:
@@ -205,7 +228,10 @@ def solve_count_from_edge(hints, grid):
 
         if np.all(grid[i] <= 0):  # or np.size(grid[i] == 0):
             continue
-        first_hint = row[np.nonzero(row)][0]
+        try:
+            first_hint = row[np.nonzero(row)][0]
+        except IndexError:
+            continue
         filled_cell_indices = np.nonzero(grid[i] > 0)
         first_filled_cell = filled_cell_indices[0][0]
         offset = index_of_first_non_negative_cell(grid[i])
@@ -214,40 +240,43 @@ def solve_count_from_edge(hints, grid):
 
 
 def parse_xml(file):
-    
-    """_summary_
+    """Returns puzzle row hints, column hints, and solution from input file
 
     Args:
         file (xml): puzzle including hints and solution formatted as described here: https://webpbn.com/pbn_fmt.html
 
     Returns:
-        _type_: _description_
+        row_hints, col_hints (np.ndarray):
+            Numpy array containing the row/column hints for the puzzle.
+            All rows are preceded by zeros so that each row length is identical.
+            col_hints is transposed to be arranged horizontally like row_hints.
+        solution_image (str): ASCII image of the puzzle solution.
     """
     row_hints = []
     col_hints = []
-    # use ElementTree to parse clues in file
+    # Use ElementTree to parse clues in file
     tree = ET.parse(file)
     root = tree.getroot()
     for child in root.findall("puzzle/clues"):
         if child.get("type") == "columns":
-            reversed_col_hints = generate_reversed_hint_matrix(child)
+            col_hints = generate_hint_matrix(child)
         if child.get("type") == "rows":
-            reversed_row_hints = generate_reversed_hint_matrix(child)
+            row_hints = generate_hint_matrix(child)
     for child in root.findall("puzzle/solution/image"):
         solution_image = child.text
-    # converting to dataframe appends zeros and makes every list the same length
-    reversed_row_hints = pd.DataFrame(reversed_row_hints).fillna(0).astype(dtype="int")
-    # convert to matrix and reverse orientation so that now the zeros are to the left
-    row_hints = np.flip(np.array(reversed_row_hints), axis=1)
-    row_hints = np.insert(row_hints, 0, 0, axis=1)
-    reversed_col_hints = pd.DataFrame(reversed_col_hints).fillna(0).astype(dtype="int")
-    col_hints = np.flip(np.array(reversed_col_hints), axis=1)
-    col_hints = np.insert(col_hints, 0, 0, axis=1)
     return (row_hints, col_hints, solution_image)
 
 
 # Convert solution from file to a numpy matrix
 def format_solution_image(solution_image):
+    """_summary_
+
+    Args:
+        solution_image (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
     solution = solution_image.split()
     solution = [line.strip("|") for line in solution]
     solution_grid = np.array([list(line) for line in solution])
@@ -255,21 +284,26 @@ def format_solution_image(solution_image):
     return solution_grid
 
 
-# takes as input ElementTree object containing the row or col hints
-# returns a list of lists of the row or col hints.
-# The lists are returned reversed to make it easier to add zeros later
-def generate_reversed_hint_matrix(child):
-    hints = []
+# Takes as input ElementTree object containing the row or col hints
+def generate_hint_matrix(child):
+    reversed_hints = []
     for line in child:
         hint_line = []
         for count in line:
             hint_line.append(int(count.text))
+        # Temporarily reverse array to make it easier to prepend zeros a couple lines down
         hint_line.reverse()
-        hints.append(hint_line)
+        reversed_hints.append(hint_line)
+    # Converting to dataframe appends zeros and makes every list the same length
+    reversed_hints = pd.DataFrame(reversed_hints).fillna(0).astype(dtype="int")
+    # Flip array back to the original orientation
+    hints = np.flip(np.array(reversed_hints), axis=1)
+    # Adds one extra zero to the start of every row.
+    hints = np.insert(hints, 0, 0, axis=1)
     return hints
 
 
-def verify_grid_solution(grid, solution_grid):
+def temp(grid, solution_grid):
     grid_check = solution_grid - grid
     if np.all(grid_check >= -1) and np.all(grid_check <= 5):
         return True
@@ -285,7 +319,7 @@ def verify_grid_solution(grid, solution_grid):
         print(f"Puzzle {percent_solved}% solved")
 
 
-def temp(grid, solution_grid):
+def verify_grid_solution(grid, solution_grid):
     grid_check = solution_grid - grid
     if np.all(grid_check >= -1) and np.all(grid_check <= 5):
         print("Solution matches")
@@ -482,6 +516,10 @@ def index_of_last_positive_cell(row):
 
 
 def index_of_last_positive_continuous_cell(row):
+    """Function looks for the first continuous group of cells in the input row.
+    Returns the index of the last cell in that group.
+    """
+
     if np.all(row <= 0):
         return None
     positive_cells = np.nonzero(row > 0)[0]
@@ -536,7 +574,7 @@ def solve_first_section(hints, grid):
 
         # Solves hint if there is at least one solved cell in section and length of section matches hint
         if length == first_hint:
-            if 5 in row[start_index:end_index] or length == 1:
+            if 5 in row[start_index:end_index]:
                 row[start_index:end_index] = 5
 
         # Marks empty cells surrounding completed hint. Only applies if the section has one extra space
@@ -590,7 +628,7 @@ def solve_first_section(hints, grid):
                     row[last_positive_continuous_cell + 1] = -2
                 except IndexError:
                     pass
-        except TypeError:
+        except (TypeError, ValueError):
             pass
     return grid
 
@@ -637,9 +675,6 @@ def index_of_first_section(row):
 # Not used
 def index_of_first_non_zero_cell(row):
     return row[np.nonzero(row)[0][0]]
-
-
-# def length_until_next_x(row):
 
 
 if __name__ == "__main__":
