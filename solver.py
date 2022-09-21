@@ -7,9 +7,10 @@ import sys
 # Global used for for debugging purposes.
 iteration = 0
 
+
 def main():
     """Attempts to solve a picross puzzle from an input file from https://webpbn.com.
-    This tool can be used to export a puzzle in xml format: 
+    This tool can be used to export a puzzle in xml format:
     https://webpbn.com/export.cgi
     This solver will only work with monochrome puzzles.
 
@@ -33,19 +34,18 @@ def main():
     In this manner every solving function can be applied to each of the four grid edges.
 
     Before running each solving function, the grid is simplified
-    by "removing" the solved edges of the grid. 
-    The cells are not actually deleted just temporarily converted to -1. 
+    by "removing" the solved edges of the grid.
+    The cells are not actually deleted just temporarily converted to -1.
     Additionally, any completed hints are removed from the hints grid temporarily.
-    This allows each function to solve more cells by 
+    This allows each function to solve more cells by
     breaking the problem up into smaller pieces.
     Any changes are overlayed onto the input puzzle grid.
-
     """
     file = f"{os.getcwd()}\\Small Axe.xml"
     # file = f"{os.getcwd()}\\Who am I.xml"
     file = f"{os.getcwd()}\\Hierographic.xml"
-    # file = f"{os.getcwd()}\\Engarde!.xml"
-    # file = f"{os.getcwd()}\\Backyard Scene.xml"
+    file = f"{os.getcwd()}\\Engarde!.xml"
+    file = f"{os.getcwd()}\\Backyard Scene.xml"
 
     row_hints, col_hints, solution_image = parse_xml(file)
     solution_grid = format_solution_image(solution_image)
@@ -54,8 +54,8 @@ def main():
     grid = mark_empty(row_hints, grid.copy())
     grid = mark_empty(col_hints, grid.copy(), transpose=True)
 
-    for i in range(5):
-        print("i = ", i)
+    for i in range(15):
+        # print("i = ", i)
 
         grid = solve_overlapping(row_hints, grid)
         grid = solve_overlapping(col_hints, grid, transpose=True)
@@ -71,17 +71,31 @@ def main():
             col_hints, grid, reduce=False, transpose=True
         )
 
-        verify_grid_solution(grid, solution_grid)
+        # grid = solve_first_section(row_hints, grid)
+        # verify_grid_solution(grid, solution_grid)
+        # grid = solve_first_section(col_hints, grid, transpose=True)
+        # verify_grid_solution(grid, solution_grid)
 
-        for j in range(5):
-            if j == 0:
-                pass
-            print(j)
+        grid = solve_if_section_matches_hint(row_hints, grid)
+        grid = solve_if_section_matches_hint(col_hints, grid, transpose=True)
 
-            grid = solve_first_section(row_hints, grid)
-            verify_grid_solution(grid, solution_grid)
-            grid = solve_first_section(col_hints, grid, transpose=True)
-            verify_grid_solution(grid, solution_grid)
+        grid = solve_finished_hint_near_edge(row_hints, grid)
+        grid = solve_finished_hint_near_edge(col_hints, grid, transpose=True)
+
+        grid = solve_small_empty_section(row_hints, grid)
+        grid = solve_small_empty_section(col_hints, grid, transpose=True)
+
+        grid = solve_too_far_from_confirmed_cell(row_hints, grid)
+        grid = solve_too_far_from_confirmed_cell(col_hints, grid, transpose=True)
+
+        grid = solve_first_cell_check(row_hints, grid)
+        grid = solve_first_cell_check(col_hints, grid, transpose=True)
+
+        grid = solve_combine_filled_cells(row_hints, grid)
+        grid = solve_combine_filled_cells(col_hints, grid, transpose=True)
+
+        grid = solver_complete_largest_hint(row_hints, grid)
+        grid = solver_complete_largest_hint(col_hints, grid, transpose=True)
 
     puzzle, image = convert_grid_to_image(row_hints, col_hints, grid)
     print(puzzle)
@@ -113,6 +127,7 @@ def process_grid(func):
     Returns:
         np.ndarray: Array of puzzle grid after applying function.
     """
+
     def wrapper(hints, grid, transpose=False, reduce=True):
         if transpose:
             grid = np.transpose(grid)
@@ -128,14 +143,17 @@ def process_grid(func):
         if transpose:
             grid = np.transpose(grid)
         return grid
+
     return wrapper
 
 
 def repeat_left_and_right(func):
-    """Wraps solving function in a two iteration loop
-    In the first loop, the solving function runs normally, checking the grid from left to right
-    In the second loop, the grid and hints are flipped along a vertical axis prior to the function call
-    The grid is then flipped back and returned
+    """Wraps solving function in a two iteration loop.
+    In the first loop, the solving function runs normally,
+        checking the grid from left to right.
+    In the second loop, the grid and hints are flipped along a vertical axis
+        prior to the function call.
+    The grid is then flipped back and returned.
 
     Args:
         hints (np.ndarray): Array of row or column hints.
@@ -144,6 +162,7 @@ def repeat_left_and_right(func):
     Returns:
         np.ndarray: Array of puzzle grid after applying function.
     """
+
     def wrapper(hints, grid):
         for i in range(2):
             if i == 1:
@@ -154,6 +173,7 @@ def repeat_left_and_right(func):
                 grid = np.flip(grid, axis=1)
                 hints = np.flip(hints, axis=1)
         return grid
+
     return wrapper
 
 
@@ -250,7 +270,7 @@ def parse_xml(file):
     """Returns puzzle row hints, column hints, and solution from input file
 
     Args:
-        file (xml): puzzle including hints and solution formatted as described here: 
+        file (xml): puzzle including hints and solution formatted as described here:
         https://webpbn.com/pbn_fmt.html
 
     Returns:
@@ -296,7 +316,6 @@ def format_solution_image(solution_image):
 
 # Takes as input ElementTree object containing the row or col hints
 def generate_hint_matrix(child):
-    print(type(child))
     """Converts element tree object containing the puzzle row or column hints to an array."""
     reversed_hints = []
     for line in child:
@@ -547,6 +566,156 @@ def overlay_solved_cells(partial_grid, grid):
     return grid
 
 
+def get_first_section(hint_row, grid_row):
+    start_index, end_index = index_of_first_section(grid_row)
+    section = grid_row[start_index:end_index]
+    hint_row = remove_hints_not_in_section(list(hint_row), section)
+    return hint_row, start_index, end_index
+
+
+@process_grid
+@repeat_left_and_right
+def solve_if_section_matches_hint(hints, grid):
+    # Solves hint if there is at least one solved cell in section and
+    # length of section matches hint
+    for hint_row, grid_row in zip(hints, grid):
+        hint_row, start_index, end_index = get_first_section(hint_row, grid_row)
+        length = end_index - start_index
+        try:
+            first_hint = hint_row[np.nonzero(hint_row)[0][0]]
+        except IndexError:
+            continue
+        if length == first_hint:
+            if 5 in grid_row[start_index:end_index]:
+                grid_row[start_index:end_index] = 5
+    return grid
+
+
+@process_grid
+@repeat_left_and_right
+def solve_finished_hint_near_edge(hints, grid):
+    # Marks empty cells surrounding completed hint.
+    # Only applies if the section has one extra space.
+    # Will probably become obsolete with future algorithm.
+    for hint_row, grid_row in zip(hints, grid):
+        hint_row, start_index, end_index = get_first_section(hint_row, grid_row)
+        length = end_index - start_index
+        section = grid_row[start_index:end_index]
+        try:
+            first_hint = hint_row[np.nonzero(hint_row)[0][0]]
+        except IndexError:
+            continue
+        num_of_solved_cells = np.size(np.nonzero(grid_row[start_index:end_index] == 5))
+        if length == first_hint + 1 and first_hint == num_of_solved_cells:
+            section = np.where(section == 0, -2, section)
+            grid_row[start_index:end_index] = section
+    return grid
+
+
+@process_grid
+@repeat_left_and_right
+def solve_small_empty_section(hints, grid):
+    # Marks section as empty if no remaining hint is small enough to fit.
+    for hint_row, grid_row in zip(hints, grid):
+        hint_row, start_index, end_index = get_first_section(hint_row, grid_row)
+        section = grid_row[start_index:end_index]
+        length = end_index - start_index
+        try:
+            smallest_hint = np.amin(hint_row[np.nonzero(hint_row)[0]])
+        except (TypeError, ValueError):
+            smallest_hint = 0
+        if length < smallest_hint or smallest_hint == 0:
+            section = np.where(section == 0, -2, section)
+            grid_row[start_index:end_index] = section
+    return grid
+
+
+@process_grid
+@repeat_left_and_right
+def solve_too_far_from_confirmed_cell(hints, grid):
+    # Marks empty cells that are too far away from solved cell.
+    # Only applies if there is one hint remaining.
+    for hint_row, grid_row in zip(hints, grid):
+        hint_row, start_index, end_index = get_first_section(hint_row, grid_row)
+        section = grid_row[start_index:end_index]
+        try:
+            first_hint = hint_row[np.nonzero(hint_row)[0][0]]
+            last_positive_continuous_cell = (
+                index_of_last_positive_continuous_cell(section) + start_index
+            )
+        except (TypeError, IndexError):
+            continue
+        if last_positive_continuous_cell - start_index > first_hint:
+            if np.size(np.nonzero(hint_row > 0)[0]) == 1:
+                grid_row[start_index : last_positive_continuous_cell - first_hint] = -2
+    return grid
+
+
+@process_grid
+@repeat_left_and_right
+def solve_first_cell_check(hints, grid):
+    # Mark first cell of section empty if hint must be one space away from edge.
+    for hint_row, grid_row in zip(hints, grid):
+        hint_row, start_index, end_index = get_first_section(hint_row, grid_row)
+        section = grid_row[start_index:end_index]
+        try:
+            first_hint = hint_row[np.nonzero(hint_row)[0][0]]
+            last_positive_continuous_cell = (
+                index_of_last_positive_continuous_cell(section) + start_index
+            )
+        except (TypeError, IndexError):
+            continue
+        # Mark first cell of section empty if hint must be one space away from edge.
+        if last_positive_continuous_cell == first_hint + start_index:
+            grid_row[start_index] = -2
+    return grid
+
+
+@process_grid
+@repeat_left_and_right
+def solve_combine_filled_cells(hints, grid):
+    # Fill in cells between solved cells if only one hint remains.
+    # Will probably become obsolete with future algorithm.
+    for hint_row, grid_row in zip(hints, grid):
+        hint_row, start_index, end_index = get_first_section(hint_row, grid_row)
+        section = grid_row[start_index:end_index]
+        try:
+            first_positive_cell = index_of_first_positive_cell(section) + start_index
+            last_positive_cell = index_of_last_positive_cell(section) + start_index
+        except TypeError:
+            continue
+        if np.size(np.nonzero(hint_row > 0)[0]) == 1 and last_positive_cell:
+            index_to_fill = grid_row[first_positive_cell:last_positive_cell]
+            grid_row[first_positive_cell:last_positive_cell] = np.where(
+                index_to_fill == 0, 5, index_to_fill
+            )
+    return grid
+
+
+@process_grid
+@repeat_left_and_right
+def solver_complete_largest_hint(hints, grid):
+    # Marks edges of completed hint if it matches the largest hint.
+    for hint_row, grid_row in zip(hints, grid):
+        hint_row, start_index, end_index = get_first_section(hint_row, grid_row)
+        section = grid_row[start_index:end_index]
+        try:
+            first_positive_cell = index_of_first_positive_cell(section) + start_index
+            last_positive_continuous_cell = (
+                index_of_last_positive_cell(section) + start_index
+            )
+        except TypeError:
+            continue
+        if last_positive_continuous_cell - first_positive_cell + 1 == np.amax(hint_row):
+            if first_positive_cell == 0:
+                pass
+            else:
+                grid_row[first_positive_cell - 1] = -2
+                grid_row[last_positive_continuous_cell + 1] = -2
+    return grid
+
+
+# Obsolete
 @process_grid
 @repeat_left_and_right
 def solve_first_section(hints, grid):
@@ -578,13 +747,13 @@ def solve_first_section(hints, grid):
         except TypeError:
             last_positive_cell = None
 
-        # Solves hint if there is at least one solved cell in section and 
+        # Solves hint if there is at least one solved cell in section and
         # length of section matches hint
         if length == first_hint:
             if 5 in grid_row[start_index:end_index]:
                 grid_row[start_index:end_index] = 5
 
-        # Marks empty cells surrounding completed hint. 
+        # Marks empty cells surrounding completed hint.
         # Only applies if the section has one extra space.
         # Will probably become obsolete with future algorithm.
         num_of_solved_cells = np.size(np.nonzero(grid_row[start_index:end_index] == 5))
@@ -597,7 +766,7 @@ def solve_first_section(hints, grid):
             section = np.where(section == 0, -2, section)
             grid_row[start_index:end_index] = section
 
-        # Marks empty cells that are too far away from solved cell. 
+        # Marks empty cells that are too far away from solved cell.
         # Only applies if there is one hint remaining.
         try:
             if last_positive_continuous_cell - start_index > first_hint:
@@ -646,7 +815,10 @@ def solve_first_section(hints, grid):
 
 def remove_hints_not_in_section(row, section):
     length = np.size(section)
-    start_index = np.nonzero(row)[0][0]
+    try:
+        start_index = np.nonzero(row)[0][0]
+    except IndexError:
+        return row
     end_index = np.size(row)
     count = 0
     for i, hint in enumerate(row):
@@ -663,6 +835,8 @@ def remove_hints_not_in_section(row, section):
         reduced_row = [0]
     else:
         reduced_row = row[start_index:end_index]
+        if not reduced_row:
+            reduced_row = [0]
     return np.array(reduced_row)
 
 
