@@ -71,10 +71,6 @@ def main():
             col_hints, grid, reduce=False, transpose=True
         )
 
-        # grid = solve_first_section(row_hints, grid)
-        # verify_grid_solution(grid, solution_grid)
-        # grid = solve_first_section(col_hints, grid, transpose=True)
-        # verify_grid_solution(grid, solution_grid)
 
         grid = solve_if_section_matches_hint(row_hints, grid)
         grid = solve_if_section_matches_hint(col_hints, grid, transpose=True)
