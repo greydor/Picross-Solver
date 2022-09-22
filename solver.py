@@ -599,6 +599,7 @@ def index_of_last_positive_continuous_cell(row):
 
 
 def overlay_solved_cells(partial_grid, grid):
+    
     partial_grid = np.where(partial_grid == -1, 0, partial_grid)
     partial_grid = np.where(partial_grid == -2, -1, partial_grid)
     grid = grid | partial_grid
