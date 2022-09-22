@@ -56,11 +56,15 @@ def main():
     grid = mark_empty(row_hints, grid.copy())
     grid = mark_empty(col_hints, grid.copy(), transpose=True)
 
-    for i in range(15):
-        # print("i = ", i)
+    previous_grid = []
+    for i in range(10):
 
         grid = solve_overlapping(row_hints, grid)
         grid = solve_overlapping(col_hints, grid, transpose=True)
+
+        grid = solve_overlapping_in_section(row_hints, grid)
+        grid = solve_overlapping_in_section(col_hints, grid, transpose=True)
+
 
         grid = solve_count_from_edge(row_hints, grid)
         grid = solve_count_from_edge(col_hints, grid, transpose=True)
@@ -93,6 +97,11 @@ def main():
 
         grid = solver_complete_largest_hint(row_hints, grid)
         grid = solver_complete_largest_hint(col_hints, grid, transpose=True)
+
+        # if np.array_equal(grid, previous_grid):
+        #     print("\n" + f"Iteration = {i}")
+        #     break
+        # previous_grid = grid.copy()
 
     puzzle, image = convert_grid_to_image(row_hints, col_hints, grid)
     if not verify_grid_solution(grid, solution_grid):
@@ -167,7 +176,7 @@ def repeat_left_and_right(func):
             if i == 1:
                 grid = np.flip(grid, axis=1)
                 hints = np.flip(hints, axis=1)
-            func(hints, grid)
+            grid = func(hints, grid)
             if i == 1:
                 grid = np.flip(grid, axis=1)
                 hints = np.flip(hints, axis=1)
@@ -195,6 +204,35 @@ def solve_overlapping(hints, grid):
             try:
                 start_index = index_of_first_non_negative_cell(grid_row)
             except ValueError:
+                continue
+            new_row[start_index + count + delta : start_index + count + hint] = 5
+            count += hint + 1
+        grid_solution[i] = new_row
+    grid = grid_solution | grid
+    return grid
+
+
+@process_grid
+@repeat_left_and_right
+def solve_overlapping_in_section(hints, grid):
+    increment_global_iteration()
+    col_length, row_length = grid.shape
+    grid_solution = np.zeros((col_length, row_length), dtype=int)
+    for i, (hint_row, grid_row) in enumerate(zip(hints, grid)):
+        hint_row, start_index, end_index = get_first_section(hint_row, grid_row)
+        hint_row = np.array(hint_row)
+        section = grid_row[start_index:end_index]
+
+        new_row = np.zeros(row_length, dtype=int)
+        min_length = calculate_min_length(section)
+        delta = length_of_unsolved_cells(section) - min_length
+        hint_row_edit = hint_row - delta
+        count = 0
+        for hint, solution in zip(hint_row, hint_row_edit):
+            if hint <= 0:
+                continue
+            elif solution <= 0:
+                count += hint + 1
                 continue
             new_row[start_index + count + delta : start_index + count + hint] = 5
             count += hint + 1
@@ -555,6 +593,7 @@ def index_of_last_positive_continuous_cell(row):
 
 
 def overlay_solved_cells(partial_grid, grid):
+    
     partial_grid = np.where(partial_grid == -1, 0, partial_grid)
     partial_grid = np.where(partial_grid == -2, -1, partial_grid)
     grid = grid | partial_grid
@@ -599,8 +638,8 @@ def solve_finished_hint_near_edge(hints, grid):
         length = end_index - start_index
         section = grid_row[start_index:end_index]
         try:
-            first_hint = hint_row[np.nonzero(hint_row)[0][0]]
-        except IndexError:
+            first_hint = hint_row[index_of_first_positive_cell(hint_row)]
+        except TypeError:
             continue
         num_of_solved_cells = np.size(np.nonzero(grid_row[start_index:end_index] == 5))
         if length == first_hint + 1 and first_hint == num_of_solved_cells:
@@ -642,11 +681,23 @@ def solve_too_far_from_confirmed_cell(hints, grid):
             last_positive_continuous_cell = (
                 index_of_last_positive_continuous_cell(section) + start_index
             )
+            first_positive_cell = index_of_first_positive_cell(section)
         except (TypeError, IndexError):
             continue
+        try:
+            largest_hint_after_first = np.amax(hint_row[1:])
+        except ValueError:
+            largest_hint_after_first = 0
+        first_filled_length = last_positive_continuous_cell - first_positive_cell
         if last_positive_continuous_cell - start_index > first_hint:
             if np.size(np.nonzero(hint_row > 0)[0]) == 1:
                 grid_row[start_index : last_positive_continuous_cell - first_hint] = -2
+            # Next elif statement is untested
+            # elif (
+            #     first_hint > largest_hint_after_first
+            #     and first_filled_length > largest_hint_after_first
+            # ):
+            #     grid_row[start_index : last_positive_continuous_cell - first_hint] = -2
     return grid
 
 
@@ -663,8 +714,10 @@ def solve_first_cell_check(hints, grid):
             last_positive_continuous_cell = (
                 index_of_last_positive_continuous_cell(section) + start_index
             )
+            first_positive_cell = index_of_first_positive_cell(section)
         except (TypeError, IndexError):
             continue
+        first_filled_length = last_positive_continuous_cell - first_positive_cell
         # Mark first cell of section empty if hint must be one space away from edge.
         if last_positive_continuous_cell == first_hint + start_index:
             grid_row[start_index] = -2
