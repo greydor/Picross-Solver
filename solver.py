@@ -45,7 +45,7 @@ def main():
     global solution_grid
     file = f"{os.getcwd()}\\Small Axe.xml"
     # file = f"{os.getcwd()}\\Who am I.xml"
-    file = f"{os.getcwd()}\\Hierographic.xml"
+    # file = f"{os.getcwd()}\\Hierographic.xml"
     # file = f"{os.getcwd()}\\Engarde!.xml"
     # file = f"{os.getcwd()}\\Backyard Scene.xml"
 
@@ -61,10 +61,6 @@ def main():
 
         grid = solve_overlapping(row_hints, grid)
         grid = solve_overlapping(col_hints, grid, transpose=True)
-
-        grid = solve_overlapping_in_section(row_hints, grid)
-        grid = solve_overlapping_in_section(col_hints, grid, transpose=True)
-
 
         grid = solve_count_from_edge(row_hints, grid)
         grid = solve_count_from_edge(col_hints, grid, transpose=True)
@@ -98,10 +94,10 @@ def main():
         grid = solver_complete_largest_hint(row_hints, grid)
         grid = solver_complete_largest_hint(col_hints, grid, transpose=True)
 
-        # if np.array_equal(grid, previous_grid):
-        #     print("\n" + f"Iteration = {i}")
-        #     break
-        # previous_grid = grid.copy()
+        if np.array_equal(grid, previous_grid):
+            print("\n" + f"Iteration = {i}")
+            break
+        previous_grid = grid.copy()
 
     puzzle, image = convert_grid_to_image(row_hints, col_hints, grid)
     if not verify_grid_solution(grid, solution_grid):
@@ -109,6 +105,8 @@ def main():
         solved = np.count_nonzero(grid != 0)
         percent_solved = round(solved / total * 100, 2)
         print(f"Puzzle {percent_solved}% solved")
+        print(puzzle)
+    else:
         print(puzzle)
     puzzle.to_excel("puzzle.xlsx")
 
@@ -211,7 +209,7 @@ def solve_overlapping(hints, grid):
     grid = grid_solution | grid
     return grid
 
-
+"""
 @process_grid
 @repeat_left_and_right
 def solve_overlapping_in_section(hints, grid):
@@ -222,9 +220,8 @@ def solve_overlapping_in_section(hints, grid):
         hint_row, start_index, end_index = get_first_section(hint_row, grid_row)
         hint_row = np.array(hint_row)
         section = grid_row[start_index:end_index]
-
         new_row = np.zeros(row_length, dtype=int)
-        min_length = calculate_min_length(section)
+        min_length = calculate_min_length(hint_row)
         delta = length_of_unsolved_cells(section) - min_length
         hint_row_edit = hint_row - delta
         count = 0
@@ -239,6 +236,7 @@ def solve_overlapping_in_section(hints, grid):
         grid_solution[i] = new_row
     grid = grid_solution | grid
     return grid
+"""
 
 
 def length_of_unsolved_cells(row):
@@ -369,6 +367,7 @@ def generate_hint_matrix(child):
 
 
 def verify_grid_solution(grid, solution_grid):
+    global iteration
     grid_check = solution_grid - grid
     if np.all(grid_check >= -1) and np.all(grid_check <= 5):
         if np.all(grid_check == 0):
@@ -593,7 +592,6 @@ def index_of_last_positive_continuous_cell(row):
 
 
 def overlay_solved_cells(partial_grid, grid):
-    
     partial_grid = np.where(partial_grid == -1, 0, partial_grid)
     partial_grid = np.where(partial_grid == -2, -1, partial_grid)
     grid = grid | partial_grid
@@ -895,19 +893,47 @@ def remove_hints_not_in_section(row, section):
     return np.array(reduced_row)
 
 
+def find_sections(row):
+    if np.all(row == -1):
+        return None
+    sections = []
+    previous_cell = -1
+    end_index = None
+    for i, cell in enumerate(row):
+        if i == len(row) - 1:
+            end_index = len(row)
+        elif previous_cell == -1 and cell != -1:
+            start_index = i
+        elif previous_cell != -1 and cell == -1:
+            end_index = i - 1
+        if end_index:
+            sections.append([start_index, end_index])
+            start_index = None
+            end_index = None
+        previous_cell = cell
+    if not sections:
+        sections = [0, len(row)]
+    return sections
+
+
+
 def index_of_first_section(row):
+    if np.any(row == -1):
+        pass
+    sections = find_sections(row)
     start_index = 0
     end_index = np.size(row)
+    # Flag is set when the first non-zero cell is reached
     flag = False
-    for k, cell in enumerate(row):
+    for i, cell in enumerate(row):
         if cell == 0 or cell == 5:
             if not flag:
-                start_index = k
-            flag = True
+                start_index = i
+                flag = True
         if cell == -1 and not flag:
             continue
         elif cell == -1 and flag:
-            end_index = k
+            end_index = i
             break
     return start_index, end_index
 
