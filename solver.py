@@ -1,15 +1,97 @@
+import os
+import sys
+import xml.etree.ElementTree as ET
 import numpy as np
 import pandas as pd
-import os
-import xml.etree.ElementTree as ET
-import sys
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.by import By
+import PySimpleGUI as sg
+
+
+class SolutionError(Exception):
+    pass
+
+class PuzzleSolved(Exception):
+    pass
 
 # Global used for for debugging purposes.
-iteration = 0
+loop_count = 0
 solution_grid = []
+
+grid_check = []
+grid_final = []
 
 
 def main():
+
+    sg.theme("DarkAmber")
+    layout = [
+        [sg.Text("Choose puzzle selection method.")],
+        [
+            [sg.Button("Select file...")],
+            [sg.Button("Enter puzzle ID#"), sg.InputText()],
+            [
+                sg.Button("Select random puzzle"),
+                sg.Combo(
+                    ["Any", "Small", "Medium", "Large", "Huge"],
+                    default_value="Any",
+                    key="size",
+                ),
+            ],
+            [sg.Button("Cancel")],
+        ],
+    ]
+
+    window = sg.Window("Select Puzzle", layout)
+
+    while True:
+        event, values = window.read()
+        if event == sg.WIN_CLOSED:
+            break
+        if event == "Select file...":
+            filename = sg.popup_get_file("Select Puzzle", no_window=True, file_types=(("XML", ".xml"),))
+            break
+        if event == "Enter puzzle ID#":
+            puzzle_id = values[0]
+            break
+        if event == "Select random puzzle":
+            print("Select random puzzle")
+            break
+        break
+    window.close()
+
+    # file = f"{os.getcwd()}\\Small Axe.xml"
+    # file = f"{os.getcwd()}\\Who am I.xml"
+    # file = f"{os.getcwd()}\\Hierographic.xml"
+    # file = f"{os.getcwd()}\\Engarde!.xml"
+    # file = f"{os.getcwd()}\\Backyard Scene.xml"
+    try:
+        row_hints, col_hints, grid = solver(filename)
+    except SolutionError:
+        global grid_check
+        print("\n" + "Incorrect solution")
+        print(f"Loop Count = {loop_count}")
+        grid_check = np.where(grid_check == 0, ".", grid_check)
+        grid_check = np.where(grid_check == "5", ".", grid_check)
+        grid_check = np.where(grid_check == "-1", ".", grid_check)
+        grid_check = np.where(grid_check == 6, -1, grid_check)
+        grid_check = np.where(grid_check == -6, 5, grid_check)
+        print(pd.DataFrame(grid_check,"\n"))
+        print(pd.DataFrame(grid_final))
+    else:
+        puzzle, image = convert_grid_to_image(row_hints, col_hints, grid)
+        if not verify_grid_solution(grid, solution_grid):
+            total = np.size(grid)
+            solved = np.count_nonzero(grid != 0)
+            percent_solved = round(solved / total * 100, 2)
+            print("Solution has no errors")
+            print(f"Puzzle {percent_solved}% solved")
+            print(puzzle)
+        puzzle.to_excel("puzzle.xlsx")
+
+
+def solver(file):
     """Attempts to solve a picross puzzle from an input file from https://webpbn.com.
     This tool can be used to export a puzzle in xml format:
     https://webpbn.com/export.cgi
@@ -43,11 +125,8 @@ def main():
     Any changes are overlayed onto the input puzzle grid.
     """
     global solution_grid
-    file = f"{os.getcwd()}\\Small Axe.xml"
-    # file = f"{os.getcwd()}\\Who am I.xml"
-    # file = f"{os.getcwd()}\\Hierographic.xml"
-    # file = f"{os.getcwd()}\\Engarde!.xml"
-    # file = f"{os.getcwd()}\\Backyard Scene.xml"
+    solve_overlapping_default = process_grid(solve_overlapping)
+    solve_overlapping_largest = process_grid_largest_hint(solve_overlapping)
 
     row_hints, col_hints, solution_image = parse_xml(file)
     solution_grid = format_solution_image(solution_image)
@@ -57,10 +136,13 @@ def main():
     grid = mark_empty(col_hints, grid.copy(), transpose=True)
 
     previous_grid = []
-    for i in range(10):
+    for i in range(100):
 
-        grid = solve_overlapping(row_hints, grid)
-        grid = solve_overlapping(col_hints, grid, transpose=True)
+        grid = solve_overlapping_default(row_hints, grid)
+        grid = solve_overlapping_default(col_hints, grid, transpose=True)
+
+        grid = solve_overlapping_largest(row_hints, grid)
+        grid = solve_overlapping_largest(col_hints, grid, transpose=True)
 
         grid = solve_count_from_edge(row_hints, grid)
         grid = solve_count_from_edge(col_hints, grid, transpose=True)
@@ -91,24 +173,22 @@ def main():
         grid = solve_combine_filled_cells(row_hints, grid)
         grid = solve_combine_filled_cells(col_hints, grid, transpose=True)
 
-        grid = solver_complete_largest_hint(row_hints, grid)
-        grid = solver_complete_largest_hint(col_hints, grid, transpose=True)
+        grid = solve_largest_hint(row_hints, grid)
+        grid = solve_largest_hint(col_hints, grid, transpose=True)
+
+        reduce_grid_to_largest_section(row_hints, grid)
+
+        if verify_grid_solution_final(grid, solution_grid):
+            puzzle, image = convert_grid_to_image(row_hints, col_hints, grid)
+            print(puzzle)
+            break
 
         if np.array_equal(grid, previous_grid):
             print("\n" + f"Iteration = {i}")
             break
         previous_grid = grid.copy()
 
-    puzzle, image = convert_grid_to_image(row_hints, col_hints, grid)
-    if not verify_grid_solution(grid, solution_grid):
-        total = np.size(grid)
-        solved = np.count_nonzero(grid != 0)
-        percent_solved = round(solved / total * 100, 2)
-        print(f"Puzzle {percent_solved}% solved")
-        print(puzzle)
-    else:
-        print(puzzle)
-    puzzle.to_excel("puzzle.xlsx")
+    return row_hints, col_hints, grid
 
 
 def process_grid(func):
@@ -135,6 +215,7 @@ def process_grid(func):
     Returns:
         np.ndarray: Array of puzzle grid after applying function.
     """
+
     def wrapper(hints, grid, transpose=False, reduce=True):
         if transpose:
             grid = np.transpose(grid)
@@ -169,6 +250,7 @@ def repeat_left_and_right(func):
     Returns:
         np.ndarray: Array of puzzle grid after applying function.
     """
+
     def wrapper(hints, grid):
         for i in range(2):
             if i == 1:
@@ -182,7 +264,20 @@ def repeat_left_and_right(func):
     return wrapper
 
 
-@process_grid
+def process_grid_largest_hint(func):
+    def wrapper(hints, grid, transpose=False):
+        if transpose:
+            grid = np.transpose(grid)
+        partial_hints, partial_grid = reduce_grid_to_largest_section(hints, grid)
+        partial_grid = func(partial_hints, partial_grid)
+        grid = overlay_solved_cells(partial_grid, grid)
+        if transpose:
+            grid = np.transpose(grid)
+        verify_grid_solution(grid, solution_grid)
+        return grid
+    return wrapper
+
+
 def solve_overlapping(hints, grid):
     increment_global_iteration()
     col_length, row_length = grid.shape
@@ -208,35 +303,6 @@ def solve_overlapping(hints, grid):
         grid_solution[i] = new_row
     grid = grid_solution | grid
     return grid
-
-"""
-@process_grid
-@repeat_left_and_right
-def solve_overlapping_in_section(hints, grid):
-    increment_global_iteration()
-    col_length, row_length = grid.shape
-    grid_solution = np.zeros((col_length, row_length), dtype=int)
-    for i, (hint_row, grid_row) in enumerate(zip(hints, grid)):
-        hint_row, start_index, end_index = get_first_section(hint_row, grid_row)
-        hint_row = np.array(hint_row)
-        section = grid_row[start_index:end_index]
-        new_row = np.zeros(row_length, dtype=int)
-        min_length = calculate_min_length(hint_row)
-        delta = length_of_unsolved_cells(section) - min_length
-        hint_row_edit = hint_row - delta
-        count = 0
-        for hint, solution in zip(hint_row, hint_row_edit):
-            if hint <= 0:
-                continue
-            elif solution <= 0:
-                count += hint + 1
-                continue
-            new_row[start_index + count + delta : start_index + count + hint] = 5
-            count += hint + 1
-        grid_solution[i] = new_row
-    grid = grid_solution | grid
-    return grid
-"""
 
 
 def length_of_unsolved_cells(row):
@@ -271,7 +337,7 @@ def calculate_min_length(row):
 
 @process_grid
 @repeat_left_and_right
-def solve_count_from_edge(hints, grid):  
+def solve_count_from_edge(hints, grid):
     """For each row in the input grid, from left to right:
     Find the index of the first positive cell.
     If the first hint is greater than this value:
@@ -367,32 +433,40 @@ def generate_hint_matrix(child):
 
 
 def verify_grid_solution(grid, solution_grid):
-    global iteration
+    global grid_check
+    global grid_final
     grid_check = solution_grid - grid
     if np.all(grid_check >= -1) and np.all(grid_check <= 5):
         if np.all(grid_check == 0):
-            print("\n" + "Puzzle solved!")
-            print(f"Iteration = {iteration}")
+            grid_final = grid
             return True
         else:
             return False
     else:
-        print("\n" + "Incorrect solution")
-        print(f"Iteration = {iteration}")
-        grid_check = np.where(grid_check == 0, ".", grid_check)
-        grid_check = np.where(grid_check == "5", ".", grid_check)
-        grid_check = np.where(grid_check == "-1", ".", grid_check)
-        grid_check = np.where(grid_check == 6, -1, grid_check)
-        grid_check = np.where(grid_check == -6, 5, grid_check)
-        print(pd.DataFrame(grid_check))
-        print()
-        print(pd.DataFrame(grid))
-        sys.exit()
+        grid_final = grid
+        raise SolutionError
+
+
+def verify_grid_solution_final(grid, solution_grid):
+    global grid_check
+    global grid_final
+    grid_check = solution_grid - grid
+    if np.all(grid_check >= -1) and np.all(grid_check <= 5):
+        if np.all(grid_check == 0):
+            grid_final = grid
+            print("\n" + "Puzzle solved!")
+            print(f"Loop Count = {loop_count}")
+            return True
+        else:
+            return False
+    else:
+        grid_final = grid
+        raise SolutionError
 
 
 def increment_global_iteration():
-    global iteration
-    iteration += 1
+    global loop_count
+    loop_count += 1
     pass
 
 
@@ -746,10 +820,12 @@ def solve_combine_filled_cells(hints, grid):
 
 @process_grid
 @repeat_left_and_right
-def solver_complete_largest_hint(hints, grid):
+def solve_largest_hint(hints, grid):
     # Marks edges of completed hint if it matches the largest hint.
     increment_global_iteration()
     for i, (hint_row, grid_row) in enumerate(zip(hints, grid)):
+        sections = find_sections(grid_row)
+        y = find_section_with_largest_hint(hint_row, sections)
         hint_row, start_index, end_index = get_first_section(hint_row, grid_row)
         section = grid_row[start_index:end_index]
         try:
@@ -893,6 +969,26 @@ def remove_hints_not_in_section(row, section):
     return np.array(reduced_row)
 
 
+def reduce_grid_to_largest_section(hints, grid):
+    hints_x, hints_y = np.shape(hints)
+    grid_x, grid_y = np.shape(grid)
+    reduced_grid = np.zeros((grid_x, grid_y), dtype=int)
+    reduced_hints = np.zeros((hints_x, 1), dtype=int)
+    for i, (hint_row, grid_row) in enumerate(zip(hints, grid)):
+        reduced_grid_row = np.array([-1] * len(grid_row))
+        sections = find_sections(grid_row)
+        if sections == None:
+            continue
+        largest_section = find_section_with_largest_hint(hint_row, sections)
+        if largest_section == None:
+            continue
+        largest_hint = [np.amax(hint_row)]
+        reduced_grid_row[largest_section[0] : largest_section[1]] = 0
+        reduced_hints[i] = largest_hint
+        reduced_grid[i] = reduced_grid_row
+    return reduced_hints, reduced_grid
+
+
 def find_sections(row):
     if np.all(row == -1):
         return None
@@ -900,12 +996,12 @@ def find_sections(row):
     previous_cell = -1
     end_index = None
     for i, cell in enumerate(row):
-        if i == len(row) - 1:
+        if i == len(row) - 1 and cell != -1:
             end_index = len(row)
-        elif previous_cell == -1 and cell != -1:
+        if previous_cell == -1 and cell != -1:
             start_index = i
         elif previous_cell != -1 and cell == -1:
-            end_index = i - 1
+            end_index = i
         if end_index:
             sections.append([start_index, end_index])
             start_index = None
@@ -916,11 +1012,22 @@ def find_sections(row):
     return sections
 
 
+def find_section_with_largest_hint(hint_row, sections):
+    largest_hint = np.amax(hint_row)
+    if sections:
+        section_lengths = [section[1] - section[0] for section in sections]
+    else:
+        return None
+    if np.count_nonzero(section_lengths >= largest_hint) == 1:
+        x = np.nonzero(section_lengths >= largest_hint)[0][0]
+        index = np.nonzero(section_lengths >= largest_hint)[0][0]
+        largest_section = sections[index]
+        return largest_section
+    else:
+        return None
+
 
 def index_of_first_section(row):
-    if np.any(row == -1):
-        pass
-    sections = find_sections(row)
     start_index = 0
     end_index = np.size(row)
     # Flag is set when the first non-zero cell is reached
