@@ -6,13 +6,12 @@ import pandas as pd
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 import PySimpleGUI as sg
 
 
 class SolutionError(Exception):
-    pass
-
-class PuzzleSolved(Exception):
     pass
 
 # Global used for for debugging purposes.
@@ -47,13 +46,19 @@ def main():
 
     while True:
         event, values = window.read()
-        if event == sg.WIN_CLOSED:
-            break
+        if event == sg.WIN_CLOSED or event == "Cancel":
+            sys.exit()
         if event == "Select file...":
-            filename = sg.popup_get_file("Select Puzzle", no_window=True, file_types=(("XML", ".xml"),))
+            filename = sg.popup_get_file(
+                "Select Puzzle",
+                no_window=True,
+                initial_folder=r".\puzzles",
+                file_types=(("XML", ".xml"),),
+            )
             break
         if event == "Enter puzzle ID#":
             puzzle_id = values[0]
+            filename = download_puzzle_file(puzzle_id)
             break
         if event == "Select random puzzle":
             print("Select random puzzle")
@@ -77,7 +82,7 @@ def main():
         grid_check = np.where(grid_check == "-1", ".", grid_check)
         grid_check = np.where(grid_check == 6, -1, grid_check)
         grid_check = np.where(grid_check == -6, 5, grid_check)
-        print(pd.DataFrame(grid_check,"\n"))
+        print(pd.DataFrame(grid_check, "\n"))
         print(pd.DataFrame(grid_final))
     else:
         puzzle, image = convert_grid_to_image(row_hints, col_hints, grid)
@@ -1044,6 +1049,34 @@ def index_of_first_section(row):
             break
     return start_index, end_index
 
+
+def download_puzzle_file(num):
+    filename = os.path.join(os.getcwd(), "puzzles", f"{num}.xml")
+    driver = webdriver.Firefox()
+    driver.get("https://webpbn.com/export.cgi")
+    id_box = driver.find_element(By.NAME, "id")
+    id_box.send_keys(num)
+    id_box.send_keys(Keys.RETURN)
+    try:
+        element = WebDriverWait(driver, 10).until(EC.none_of(EC.title_contains("Webpbn: Puzzle Export")))
+    except:
+        driver.quit()
+        sys.exit("Page failed to load")
+    element = (driver.find_element(By.XPATH, "/html/body[1]"))
+    with open(filename, "w") as f:
+        f.write(element.text)
+    driver.close()
+    return filename
+    
+
+def get_random_puzzle_id():
+    driver = webdriver.Firefox()
+    driver.get("https://webpbn.com/random.cgi")
+    id_box = driver.find_element(By.NAME, "psize")
+
+
+
+    
 
 # Not used
 def index_of_first_non_zero_cell(row):
