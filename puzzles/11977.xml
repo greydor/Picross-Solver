@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+<!DOCTYPE pbn SYSTEM "https://webpbn.com/pbn-0.3.dtd">
+<puzzleset>
+<source>webpbn.com</source>
+
+<puzzle type="grid" defaultcolor="black">
+<title>WCP #77  Blue, pink, green or ?</title>
+<author>Liz P</author>
+<authorid>lizteach</authorid>
+<copyright>(c) Copyright 2011 by Liz P</copyright>
+<id>#11977 (v.1)</id>
+<description>Kate knitted these baby booties for her sister&apos;s little one on a layover during their honeymoon.  Kate&apos;s not a traditionalist with the regular pink/blue, she doesn&apos;t like green because it clashes with so many baby clothes, and she didn&apos;t have yellow yarn anyway, so she settled on white booties.</description>
+<note>published,definitely unique,definitely line/color solvable</note>
+
+<color name="white" char=".">FFFFFF</color>
+<color name="black" char="X">000000</color>
+
+<clues type="columns">
+<line><count>3</count></line>
+<line><count>3</count><count>2</count></line>
+<line><count>7</count><count>1</count></line>
+<line><count>4</count><count>1</count></line>
+<line><count>1</count><count>1</count><count>1</count></line>
+<line><count>1</count><count>1</count><count>2</count></line>
+<line><count>1</count><count>2</count><count>2</count></line>
+<line><count>12</count></line>
+<line><count>3</count><count>2</count></line>
+<line><count>7</count><count>1</count></line>
+<line><count>4</count><count>1</count></line>
+<line><count>1</count><count>1</count><count>1</count></line>
+<line><count>1</count><count>1</count><count>2</count></line>
+<line><count>1</count><count>2</count><count>2</count></line>
+<line><count>9</count></line>
+</clues>
+
+<clues type="rows">
+<line><count>4</count></line>
+<line><count>2</count><count>1</count><count>4</count></line>
+<line><count>2</count><count>2</count><count>2</count><count>1</count></line>
+<line><count>6</count><count>2</count><count>2</count></line>
+<line><count>1</count><count>1</count><count>6</count></line>
+<line><count>1</count><count>1</count><count>1</count><count>1</count></line>
+<line><count>1</count><count>1</count><count>1</count><count>1</count></line>
+<line><count>2</count><count>1</count><count>1</count><count>1</count></line>
+<line><count>1</count><count>3</count><count>1</count></line>
+<line><count>2</count><count>3</count><count>1</count></line>
+<line><count>1</count><count>4</count><count>2</count></line>
+<line><count>2</count><count>1</count><count>1</count><count>2</count></line>
+<line><count>4</count><count>2</count><count>1</count></line>
+<line><count>4</count></line>
+<line></line>
+</clues>
+
+<solution type="goal">
+<image>
+|...XXXX........|
+|..XX...X..XXXX.|
+|..XX..XX.XX...X|
+|..XXXXXX.XX..XX|
+|..X....X.XXXXXX|
+|..X....X.X....X|
+|..X....X.X....X|
+|.XX....X.X....X|
+|.X.....XXX....X|
+|XX....XXX.....X|
+|X....XXXX....XX|
+|XX...X.X....XX.|
+|.XXXX..XX...X..|
+|........XXXX...|
+|...............|
+</image>
+</solution>
+
+</puzzle>
+</puzzleset>
