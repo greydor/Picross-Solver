@@ -15,6 +15,7 @@ import PySimpleGUI as sg
 class SolutionError(Exception):
     pass
 
+
 # Global used for for debugging purposes.
 loop_count = 0
 solution_grid = []
@@ -240,6 +241,7 @@ def process_grid(func):
             grid = np.transpose(grid)
         verify_grid_solution(grid, solution_grid)
         return grid
+
     return wrapper
 
 
@@ -269,6 +271,7 @@ def repeat_left_and_right(func):
                 grid = np.flip(grid, axis=1)
                 hints = np.flip(hints, axis=1)
         return grid
+
     return wrapper
 
 
@@ -283,6 +286,7 @@ def process_grid_largest_hint(func):
             grid = np.transpose(grid)
         verify_grid_solution(grid, solution_grid)
         return grid
+
     return wrapper
 
 
@@ -1061,16 +1065,18 @@ def download_puzzle_file(num):
     id_box.send_keys(num)
     id_box.send_keys(Keys.RETURN)
     try:
-        WebDriverWait(driver, 5).until(EC.none_of(EC.title_contains("Webpbn: Puzzle Export")))
+        WebDriverWait(driver, 5).until(
+            EC.none_of(EC.title_contains("Webpbn: Puzzle Export"))
+        )
     except:
         driver.quit()
         sys.exit("Page failed to load")
-    element = (driver.find_element(By.XPATH, "/html/body[1]"))
+    element = driver.find_element(By.XPATH, "/html/body[1]")
     with open(filename, "w") as f:
         f.write(element.text)
     driver.close()
     return filename
-    
+
 
 def get_random_puzzle_id(size):
     driver = webdriver.Firefox()
@@ -1100,8 +1106,6 @@ def get_random_puzzle_id(size):
     driver.close()
     return puzzle_id
 
-
-    
 
 # Not used
 def index_of_first_non_zero_cell(row):
