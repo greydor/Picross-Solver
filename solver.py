@@ -1,5 +1,6 @@
 import os
 import sys
+import re
 import xml.etree.ElementTree as ET
 import numpy as np
 import pandas as pd
@@ -61,7 +62,9 @@ def main():
             filename = download_puzzle_file(puzzle_id)
             break
         if event == "Select random puzzle":
-            print("Select random puzzle")
+            size = values["size"]
+            puzzle_id = get_random_puzzle_id(size)
+            filename = download_puzzle_file(puzzle_id)
             break
         break
     window.close()
@@ -1058,7 +1061,7 @@ def download_puzzle_file(num):
     id_box.send_keys(num)
     id_box.send_keys(Keys.RETURN)
     try:
-        element = WebDriverWait(driver, 10).until(EC.none_of(EC.title_contains("Webpbn: Puzzle Export")))
+        WebDriverWait(driver, 5).until(EC.none_of(EC.title_contains("Webpbn: Puzzle Export")))
     except:
         driver.quit()
         sys.exit("Page failed to load")
@@ -1069,11 +1072,33 @@ def download_puzzle_file(num):
     return filename
     
 
-def get_random_puzzle_id():
+def get_random_puzzle_id(size):
     driver = webdriver.Firefox()
     driver.get("https://webpbn.com/random.cgi")
-    id_box = driver.find_element(By.NAME, "psize")
-
+    size_elements = driver.find_elements(By.NAME, "psize")
+    if size == "Any":
+        size_elements[0].click()
+    elif size == "Small":
+        size_elements[1].click()
+    elif size == "Medium":
+        size_elements[2].click()
+    elif size == "Large":
+        size_elements[3].click()
+    elif size == "Huge":
+        size_elements[4].click()
+    color_elements = driver.find_elements(By.NAME, "pcolor")
+    color_elements[1].click()
+    color_elements[1].send_keys(Keys.RETURN)
+    try:
+        WebDriverWait(driver, 5).until(EC.title_contains("puzzle #"))
+    except:
+        driver.quit()
+        sys.exit("Page failed to load")
+    title = driver.find_element(By.ID, "title").text
+    matches = re.search(r"#([0-9]*)", title)
+    puzzle_id = matches.group(1)
+    driver.close()
+    return puzzle_id
 
 
     
