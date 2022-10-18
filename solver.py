@@ -11,7 +11,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 import PySimpleGUI as sg
 
-# SolutionError is raised when a mistake is made when solving the puzzle.
+# SolutionError is raised when a mistake is detected when solving the puzzle.
 class SolutionError(Exception):
     pass
 
@@ -28,7 +28,8 @@ solution_grid = []
 # Puzzle grid that contains only cells that have mistakes.
 # Printed in case of SolutionError.
 grid_check = []
-# Puzzle grid that the current solution when a SolutionError is detected.
+
+# Puzzle grid of the current solution when a SolutionError is detected.
 # Printed in case of SolutionError.
 grid_final = []
 
@@ -113,7 +114,7 @@ def main():
             print("Solution has no errors")
             print(f"Puzzle {percent_solved}% solved")
             print(puzzle)
-        # Write puzzle and hints to excel file.
+        # Write puzzle to excel file.
         puzzle.to_excel("puzzle.xlsx")
 
 
@@ -164,6 +165,7 @@ def solver(file):
     solution_grid = format_solution_image(solution_image)
     # Create empty grid
     grid = np.full((len(row_hints), len(col_hints)), 0)
+
     grid = mark_empty(row_hints, grid.copy())
     grid = mark_empty(col_hints, grid.copy(), transpose=True)
 
@@ -359,7 +361,7 @@ def length_of_unsolved_cells(row):
 
 
 def calculate_min_length(row):
-    """Returns minimum length of the solved cells if they are as close together as possible"""
+    """Returns minimum length of the solved cells assuming they are as close together as possible"""
     count = 0
     min_length = 0
     for hint in row:
