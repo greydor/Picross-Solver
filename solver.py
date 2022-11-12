@@ -85,7 +85,7 @@ def main():
 
     # file = f"{os.getcwd()}\\Small Axe.xml"
     # file = f"{os.getcwd()}\\Who am I.xml"
-    # file = f"{os.getcwd()}\\Hierographic.xml"
+    # filename = f"{os.getcwd()}\\Hierographic.xml"
     # file = f"{os.getcwd()}\\Engarde!.xml"
     # file = f"{os.getcwd()}\\Backyard Scene.xml"
 
@@ -100,9 +100,10 @@ def main():
         grid_check = np.where(grid_check == 0, ".", grid_check)
         grid_check = np.where(grid_check == "5", ".", grid_check)
         grid_check = np.where(grid_check == "-1", ".", grid_check)
-        grid_check = np.where(grid_check == 6, -1, grid_check)
-        grid_check = np.where(grid_check == -6, 5, grid_check)
-        print(pd.DataFrame(grid_check, "\n"))
+        grid_check = np.where(grid_check == "6", -1, grid_check)
+        grid_check = np.where(grid_check == "-6", 5, grid_check)
+        print(pd.DataFrame(grid_check))
+        print("\n")
         print(pd.DataFrame(grid_final))
     else:
         puzzle, image = convert_grid_to_image(row_hints, col_hints, grid)
@@ -160,10 +161,9 @@ def solver(file):
     solve_overlapping_default = process_grid(solve_overlapping)
     solve_overlapping_largest = process_grid_largest_hint(solve_overlapping)
 
-    # Extract puzzle hints and solution.
     row_hints, col_hints, solution_image = parse_xml(file)
     solution_grid = format_solution_image(solution_image)
-    # Create empty grid
+    # Initialize empty grid
     grid = np.full((len(row_hints), len(col_hints)), 0)
 
     grid = mark_empty(row_hints, grid.copy())
@@ -176,8 +176,11 @@ def solver(file):
         grid = solve_overlapping_default(row_hints, grid)
         grid = solve_overlapping_default(col_hints, grid, transpose=True)
 
-        grid = solve_overlapping_largest(row_hints, grid)
-        grid = solve_overlapping_largest(col_hints, grid, transpose=True)
+        # grid = solve_overlapping_largest(row_hints, grid)
+        # grid = solve_overlapping_largest(col_hints, grid, transpose=True)
+
+        grid = solve_overlapping_test(row_hints, grid)
+        grid = solve_overlapping_test(col_hints, grid, transpose=True)       
 
         grid = solve_count_from_edge(row_hints, grid)
         grid = solve_count_from_edge(col_hints, grid, transpose=True)
@@ -691,6 +694,13 @@ def index_of_last_positive_cell(row):
     return positive_cells[-1]
 
 
+def index_of_last_non_negative_cell(row):
+    if np.all(row <= 0):
+        return None
+    positive_cells = np.nonzero(row >= 0)[0]
+    return positive_cells[-1]
+
+
 def index_of_last_positive_continuous_cell(row):
     """Function looks for the first continuous group of cells in the input row.
     Returns the index of the last cell in that group.
@@ -1054,11 +1064,90 @@ def get_random_puzzle_id(size):
     driver.close()
     return puzzle_id
 
+@process_grid
+def solve_overlapping_test(hints, grid):
+    increment_global_loop_count()
+    col_length, row_length = grid.shape
+    grid_solution = np.zeros((col_length, row_length), dtype=int)
+    for i, (hint_row, grid_row) in enumerate(zip(hints, grid)):
+        grid_row1 = grid_row.copy()
+        mark_hints_from_edge(hint_row, grid_row1)
+        grid_row2 = np.flip(grid_row.copy())
+        mark_hints_from_edge(hint_row, grid_row2, flip=True)
 
-# Not currently used
+        try:
+            grid_row1_inner = grid_row1[index_of_first_non_negative_cell(grid_row1):index_of_last_non_negative_cell(grid_row1) + 1]
+        except (ValueError, TypeError):
+            continue
+        try:
+            grid_row2_inner = grid_row2[index_of_first_non_negative_cell(grid_row2):index_of_last_non_negative_cell(grid_row2) + 1]
+        except (ValueError, TypeError):
+            continue        
+
+        new_row = np.zeros(row_length, dtype=int)
+        grid_row2_inner = np.flip(grid_row2_inner)
+        for j, (cell1, cell2) in enumerate(zip(grid_row1_inner, grid_row2_inner)):
+            if cell1 == cell2 and cell1 >= 10:
+                new_row[j + index_of_first_non_negative_cell(grid_row1)] = 5
+        grid_solution[i] = new_row
+    grid = grid_solution | grid
+    return grid
+        
+
+def mark_hints_from_edge(hint_row, grid_row, flip=False):
+    if not flip:
+        hint_index = index_of_first_non_zero_cell(hint_row)
+        hint_count = 1
+        if hint_index == None:
+            return
+    else:
+        hint_count = np.nonzero(hint_row)[0].size
+        try:
+            hint_index = np.nonzero(hint_row)[0][-1]
+        except IndexError:
+            return
+    hint = hint_row[hint_index]
+    countdown = hint
+    for i, cell in enumerate(grid_row):
+        try:
+            index = index_of_first_non_negative_cell(grid_row)
+        except ValueError:
+            continue
+        if i < index:
+            continue
+        if cell >= 0 and countdown > 0:
+            countdown -= 1
+            grid_row[i] = 10 + hint_count
+        elif cell >= 0 and countdown == 0:
+            if not flip:
+                hint_index += 1
+                hint_count += 1
+            else:
+                hint_index -= 1
+                hint_count -= 1
+                if hint_index < 0:
+                    return 
+            try:    
+                hint = hint_row[hint_index]
+            except IndexError:
+                return                   
+            countdown = hint - 1
+            if hint != 0:
+                grid_row[i] = 10 + hint_count
+        elif cell == -1 and countdown > 0:
+            countdown -= 1
+            grid_row[i - (hint - countdown):i] = -1
+            countdown = hint
+            continue
+        elif cell == -1 and countdown == 0:
+            continue
+
+
 def index_of_first_non_zero_cell(row):
-    return row[np.nonzero(row)[0][0]]
-
+    if np.all(row <= 0):
+        return None
+    return np.nonzero(row)[0][0]
+    
 
 if __name__ == "__main__":
     main()
