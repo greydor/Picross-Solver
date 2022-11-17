@@ -131,9 +131,9 @@ def solver(file):
     0 means the cell is unidentified.
     -2 is a temporary designation for a blank cell.
         This will eventually be converted to -1 at the end of the function.
-    
-    Note the terminology "section" is used throughout the program to describe 
-    a continuous group of cells bounded on both sides by confirmed blank cells or the 
+
+    Note the terminology "section" is used throughout the program to describe
+    a continuous group of cells bounded on both sides by confirmed blank cells or the
     edge of the grid. The grid is often broken up into sections to help with solving.
 
     Each solving function starts with the word "solve" for easy identification.
@@ -157,9 +157,6 @@ def solver(file):
     Any changes are overlayed onto the input puzzle grid.
     """
     global solution_grid
-    # Define multiple decorated versions of solve_overlapping().
-    solve_overlapping_default = process_grid(solve_overlapping)
-    solve_overlapping_largest = process_grid_largest_hint(solve_overlapping)
 
     row_hints, col_hints, solution_image = parse_xml(file)
     solution_grid = format_solution_image(solution_image)
@@ -173,14 +170,11 @@ def solver(file):
 
     for i in range(100):
 
-        grid = solve_overlapping_default(row_hints, grid)
-        grid = solve_overlapping_default(col_hints, grid, transpose=True)
+        grid = solve_overlapping(row_hints, grid)
+        grid = solve_overlapping(col_hints, grid, transpose=True)
 
-        # grid = solve_overlapping_largest(row_hints, grid)
-        # grid = solve_overlapping_largest(col_hints, grid, transpose=True)
-
-        grid = solve_overlapping_test(row_hints, grid)
-        grid = solve_overlapping_test(col_hints, grid, transpose=True)       
+        grid = solve_overlapping_extended(row_hints, grid)
+        grid = solve_overlapping_extended(col_hints, grid, transpose=True)
 
         grid = solve_count_from_edge(row_hints, grid)
         grid = solve_count_from_edge(col_hints, grid, transpose=True)
@@ -291,6 +285,7 @@ def repeat_left_and_right(func):
     Returns:
         np.ndarray: Array of puzzle grid after applying function.
     """
+
     def wrapper(hints, grid):
         for i in range(2):
             if i == 1:
@@ -305,20 +300,7 @@ def repeat_left_and_right(func):
     return wrapper
 
 
-def process_grid_largest_hint(func):
-    def wrapper(hints, grid, transpose=False):
-        if transpose:
-            grid = np.transpose(grid)
-        partial_hints, partial_grid = reduce_grid_to_largest_section(hints, grid)
-        partial_grid = func(partial_hints, partial_grid)
-        grid = overlay_solved_cells(partial_grid, grid)
-        if transpose:
-            grid = np.transpose(grid)
-        verify_grid_solution(grid, solution_grid)
-        return grid
-    return wrapper
-
-
+@process_grid
 def solve_overlapping(hints, grid):
     increment_global_loop_count()
     col_length, row_length = grid.shape
@@ -719,7 +701,7 @@ def index_of_last_positive_continuous_cell(row):
 
 
 def overlay_solved_cells(partial_grid, grid):
-    """Merges any changes that were made to the temporary partial grid 
+    """Merges any changes that were made to the temporary partial grid
     onto the main puzzle grid.
     """
     partial_grid = np.where(partial_grid == -1, 0, partial_grid)
@@ -982,21 +964,6 @@ def find_sections(row):
     return sections
 
 
-def find_section_with_largest_hint(hint_row, sections):
-    largest_hint = np.amax(hint_row)
-    if sections:
-        section_lengths = [section[1] - section[0] for section in sections]
-    else:
-        return None
-    if np.count_nonzero(section_lengths >= largest_hint) == 1:
-        x = np.nonzero(section_lengths >= largest_hint)[0][0]
-        index = np.nonzero(section_lengths >= largest_hint)[0][0]
-        largest_section = sections[index]
-        return largest_section
-    else:
-        return None
-
-
 def index_of_first_section(row):
     start_index = 0
     end_index = np.size(row)
@@ -1064,8 +1031,9 @@ def get_random_puzzle_id(size):
     driver.close()
     return puzzle_id
 
+
 @process_grid
-def solve_overlapping_test(hints, grid):
+def solve_overlapping_extended(hints, grid):
     increment_global_loop_count()
     col_length, row_length = grid.shape
     grid_solution = np.zeros((col_length, row_length), dtype=int)
@@ -1076,13 +1044,23 @@ def solve_overlapping_test(hints, grid):
         mark_hints_from_edge(hint_row, grid_row2, flip=True)
 
         try:
-            grid_row1_inner = grid_row1[index_of_first_non_negative_cell(grid_row1):index_of_last_non_negative_cell(grid_row1) + 1]
+            grid_row1_inner = grid_row1[
+                index_of_first_non_negative_cell(
+                    grid_row1
+                ) : index_of_last_non_negative_cell(grid_row1)
+                + 1
+            ]
         except (ValueError, TypeError):
             continue
         try:
-            grid_row2_inner = grid_row2[index_of_first_non_negative_cell(grid_row2):index_of_last_non_negative_cell(grid_row2) + 1]
+            grid_row2_inner = grid_row2[
+                index_of_first_non_negative_cell(
+                    grid_row2
+                ) : index_of_last_non_negative_cell(grid_row2)
+                + 1
+            ]
         except (ValueError, TypeError):
-            continue        
+            continue
 
         new_row = np.zeros(row_length, dtype=int)
         grid_row2_inner = np.flip(grid_row2_inner)
@@ -1092,7 +1070,7 @@ def solve_overlapping_test(hints, grid):
         grid_solution[i] = new_row
     grid = grid_solution | grid
     return grid
-        
+
 
 def mark_hints_from_edge(hint_row, grid_row, flip=False):
     if not flip:
@@ -1126,17 +1104,17 @@ def mark_hints_from_edge(hint_row, grid_row, flip=False):
                 hint_index -= 1
                 hint_count -= 1
                 if hint_index < 0:
-                    return 
-            try:    
+                    return
+            try:
                 hint = hint_row[hint_index]
             except IndexError:
-                return                   
+                return
             countdown = hint - 1
             if hint != 0:
                 grid_row[i] = 10 + hint_count
         elif cell == -1 and countdown > 0:
             countdown -= 1
-            grid_row[i - (hint - countdown):i] = -1
+            grid_row[i - (hint - countdown) : i] = -1
             countdown = hint
             continue
         elif cell == -1 and countdown == 0:
@@ -1147,7 +1125,7 @@ def index_of_first_non_zero_cell(row):
     if np.all(row <= 0):
         return None
     return np.nonzero(row)[0][0]
-    
+
 
 if __name__ == "__main__":
     main()
