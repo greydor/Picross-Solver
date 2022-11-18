@@ -964,6 +964,21 @@ def find_sections(row):
     return sections
 
 
+def find_section_with_largest_hint(hint_row, sections):
+    largest_hint = np.amax(hint_row)
+    if sections:
+        section_lengths = [section[1] - section[0] for section in sections]
+    else:
+        return None
+    if np.count_nonzero(section_lengths >= largest_hint) == 1:
+        x = np.nonzero(section_lengths >= largest_hint)[0][0]
+        index = np.nonzero(section_lengths >= largest_hint)[0][0]
+        largest_section = sections[index]
+        return largest_section
+    else:
+        return None
+
+
 def index_of_first_section(row):
     start_index = 0
     end_index = np.size(row)
