@@ -1,0 +1,30 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Play Picross!
+{% endblock %}
+
+{% block main %}
+    <h2>Choose puzzle selection method:</h2>
+    <form>
+        <label for="load_file">Load puzzle from file</label>
+        <button type="button" id="load_file">Load...</button>
+    </form>
+    <form>
+        <label for="puzzle_id">Load puzzle id# from webpbn.com</label>
+        <input type="text" name="puzzle_id" id="puzzle_id">
+        <input type="submit" value="Submit">
+    </form>
+    <form>
+        <label for="random_puzzle">Load random puzzle from webpbn.com</label>
+        <select name="puzzle_id" id="random_puzzle">
+            <option value="">--Select a Puzzle Size--</option>
+            <option value="any">Any</option>
+            <option value="small">Small</option>
+            <option value="medium">Medium</option>
+            <option value="large">Large</option>
+            <option value="huge">Huge</option>
+        </select>
+        <input type="submit" value="Submit">
+    </form>
+{% endblock %}
