@@ -4,6 +4,10 @@
     Play Picross!
 {% endblock %}
 
+{% block script %}
+    <script src="/static/picross.js"></script>
+{% endblock %}
+
 {% block main %}
     <h2>Choose puzzle selection method:</h2>
     <form>
@@ -13,11 +17,11 @@
     <form>
         <label for="puzzle_id">Load puzzle id# from webpbn.com</label>
         <input type="text" name="puzzle_id" id="puzzle_id">
-        <input type="submit" value="Submit">
+        <button type="button" id="id_button">Submit</button>
     </form>
     <form>
-        <label for="random_puzzle">Load random puzzle from webpbn.com</label>
-        <select name="puzzle_id" id="random_puzzle">
+        <label for="puzzle_size">Load random puzzle from webpbn.com</label>
+        <select name="puzzle_size" id="puzzle_size">
             <option value="">--Select a Puzzle Size--</option>
             <option value="any">Any</option>
             <option value="small">Small</option>
@@ -25,6 +29,6 @@
             <option value="large">Large</option>
             <option value="huge">Huge</option>
         </select>
-        <input type="submit" value="Submit">
+        <button type="button" id="random_button">Submit</button>
     </form>
 {% endblock %}

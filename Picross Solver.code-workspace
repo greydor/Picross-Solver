@@ -2,6 +2,9 @@
 	"folders": [
 		{
 			"path": "."
+		},
+		{
+			"path": "../CS50-Problem-Sets/CS50"
 		}
 	],
 	"settings": {

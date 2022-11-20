@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Play Picross!</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <link rel="stylesheet" type="text/css" href="./styles.css">
+    <script src="picross.js"></script>
+
+</head>
+<body>
+    <header>
+        <h1>Picross Site</h1>
+    </header>
+    <main>
+        <h2>Choose puzzle selection method:</h2>
+        <form>
+            <label for="load_file">Load puzzle from file</label>
+            <button type="button" id="load_file">Load...</button>
+        </form>
+        <form>
+            <label for="puzzle_id">Load puzzle id# from webpbn.com</label>
+            <input type="text" name="puzzle_id" id="puzzle_id">
+            <button type="button" id="id_button">Submit</button>
+        </form>
+        <form>
+            <label for="puzzle_size">Load random puzzle from webpbn.com</label>
+            <select name="puzzle_size" id="puzzle_size">
+                <option value="">--Select a Puzzle Size--</option>
+                <option value="any">Any</option>
+                <option value="small">Small</option>
+                <option value="medium">Medium</option>
+                <option value="large">Large</option>
+                <option value="huge">Huge</option>
+            </select>
+            <button type="button" id="random_button">Submit</button>
+        </form>
+    </main>
+</body>
+</html>

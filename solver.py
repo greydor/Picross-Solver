@@ -35,53 +35,54 @@ grid_final = []
 
 
 def main():
-    # Define UI.
-    sg.theme("DarkAmber")
-    layout = [
-        [sg.Text("Choose puzzle selection method.")],
-        [
-            [sg.Button("Select file...")],
-            [sg.Button("Enter puzzle ID#"), sg.InputText()],
+    if __name__ == "__main__":
+        # Define UI.
+        sg.theme("DarkAmber")
+        layout = [
+            [sg.Text("Choose puzzle selection method.")],
             [
-                sg.Button("Select random puzzle"),
-                sg.Combo(
-                    ["Any", "Small", "Medium", "Large", "Huge"],
-                    default_value="Any",
-                    key="size",
-                ),
+                [sg.Button("Select file...")],
+                [sg.Button("Enter puzzle ID#"), sg.InputText()],
+                [
+                    sg.Button("Select random puzzle"),
+                    sg.Combo(
+                        ["Any", "Small", "Medium", "Large", "Huge"],
+                        default_value="Any",
+                        key="size",
+                    ),
+                ],
+                [sg.Button("Cancel")],
             ],
-            [sg.Button("Cancel")],
-        ],
-    ]
-    window = sg.Window("Select Puzzle", layout)
+        ]
+        window = sg.Window("Select Puzzle", layout)
 
-    # Prompt user to select puzzle to solve.
-    while True:
-        event, values = window.read()
-        if event == sg.WIN_CLOSED or event == "Cancel":
-            sys.exit()
-        # Select .xml file stored on drive.
-        if event == "Select file...":
-            filename = sg.popup_get_file(
-                "Select Puzzle",
-                no_window=True,
-                initial_folder=r".\puzzles",
-                file_types=(("XML", ".xml"),),
-            )
+        # Prompt user to select puzzle to solve.
+        while True:
+            event, values = window.read()
+            if event == sg.WIN_CLOSED or event == "Cancel":
+                sys.exit()
+            # Select .xml file stored on drive.
+            if event == "Select file...":
+                filename = sg.popup_get_file(
+                    "Select Puzzle",
+                    no_window=True,
+                    initial_folder=r".\puzzles",
+                    file_types=(("XML", ".xml"),),
+                )
+                break
+            # Select puzzle id# from https://webpbn.com
+            if event == "Enter puzzle ID#":
+                puzzle_id = values[0]
+                filename = download_puzzle_file(puzzle_id)
+                break
+            # Select random puzzle of chosen size from https://webpbn.com
+            if event == "Select random puzzle":
+                size = values["size"]
+                puzzle_id = get_random_puzzle_id(size)
+                filename = download_puzzle_file(puzzle_id)
+                break
             break
-        # Select puzzle id# from https://webpbn.com
-        if event == "Enter puzzle ID#":
-            puzzle_id = values[0]
-            filename = download_puzzle_file(puzzle_id)
-            break
-        # Select random puzzle of chosen size from https://webpbn.com
-        if event == "Select random puzzle":
-            size = values["size"]
-            puzzle_id = get_random_puzzle_id(size)
-            filename = download_puzzle_file(puzzle_id)
-            break
-        break
-    window.close()
+        window.close()
 
     # file = f"{os.getcwd()}\\Small Axe.xml"
     # file = f"{os.getcwd()}\\Who am I.xml"
@@ -95,13 +96,13 @@ def main():
         row_hints, col_hints, grid = solver(filename)
     except SolutionError:
         global grid_check
-        print("\n" + "Incorrect solution")
-        print(f"Loop Count = {loop_count}")
         grid_check = np.where(grid_check == 0, ".", grid_check)
         grid_check = np.where(grid_check == "5", ".", grid_check)
         grid_check = np.where(grid_check == "-1", ".", grid_check)
         grid_check = np.where(grid_check == "6", -1, grid_check)
         grid_check = np.where(grid_check == "-6", 5, grid_check)
+        print("\n" + "Incorrect solution")
+        print(f"Loop Count = {loop_count}")
         print(pd.DataFrame(grid_check))
         print("\n")
         print(pd.DataFrame(grid_final))
