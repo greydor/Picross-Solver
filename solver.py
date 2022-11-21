@@ -999,7 +999,7 @@ def index_of_first_section(row):
 
 
 def download_puzzle_file(num):
-    filename = os.path.join(os.getcwd(), "puzzles", f"{num}.xml")
+    filename = os.path.join(os.getcwd(), "puzzles", "current puzzle.xml")
     driver = webdriver.Firefox()
     driver.get("https://webpbn.com/export.cgi")
     id_box = driver.find_element(By.NAME, "id")
@@ -1023,16 +1023,17 @@ def get_random_puzzle_id(size):
     driver = webdriver.Firefox()
     driver.get("https://webpbn.com/random.cgi")
     size_elements = driver.find_elements(By.NAME, "psize")
-    if size == "Any":
-        size_elements[0].click()
-    elif size == "Small":
-        size_elements[1].click()
-    elif size == "Medium":
-        size_elements[2].click()
-    elif size == "Large":
-        size_elements[3].click()
-    elif size == "Huge":
-        size_elements[4].click()
+    match size:
+        case "Any" | "any":
+            size_elements[0].click()
+        case "Small" | "small":
+            size_elements[1].click()
+        case "Medium" | "medium":
+            size_elements[2].click()
+        case "Large" | "large":
+            size_elements[3].click()
+        case "Huge" | "huge":
+            size_elements[4].click()
     color_elements = driver.find_elements(By.NAME, "pcolor")
     color_elements[1].click()
     color_elements[1].send_keys(Keys.RETURN)
