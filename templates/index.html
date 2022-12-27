@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block script %}
-    <script src="/static/picross.js"></script>
+    <script src="/static/picross.js" defer></script>
 {% endblock %}
 
 {% block main %}
@@ -31,4 +31,7 @@
         </select>
         <button type="submit" id="random_button">Submit</button>
     </form>
+    <div>
+      {{ grid }}
+    </div>
 {% endblock %}

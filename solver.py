@@ -35,54 +35,53 @@ grid_final = []
 
 
 def main():
-    if __name__ == "__main__":
-        # Define UI.
-        sg.theme("DarkAmber")
-        layout = [
-            [sg.Text("Choose puzzle selection method.")],
+    # Define UI.
+    sg.theme("DarkAmber")
+    layout = [
+        [sg.Text("Choose puzzle selection method.")],
+        [
+            [sg.Button("Select file...")],
+            [sg.Button("Enter puzzle ID#"), sg.InputText()],
             [
-                [sg.Button("Select file...")],
-                [sg.Button("Enter puzzle ID#"), sg.InputText()],
-                [
-                    sg.Button("Select random puzzle"),
-                    sg.Combo(
-                        ["Any", "Small", "Medium", "Large", "Huge"],
-                        default_value="Any",
-                        key="size",
-                    ),
-                ],
-                [sg.Button("Cancel")],
+                sg.Button("Select random puzzle"),
+                sg.Combo(
+                    ["Any", "Small", "Medium", "Large", "Huge"],
+                    default_value="Any",
+                    key="size",
+                ),
             ],
-        ]
-        window = sg.Window("Select Puzzle", layout)
+            [sg.Button("Cancel")],
+        ],
+    ]
+    window = sg.Window("Select Puzzle", layout)
 
-        # Prompt user to select puzzle to solve.
-        while True:
-            event, values = window.read()
-            if event == sg.WIN_CLOSED or event == "Cancel":
-                sys.exit()
-            # Select .xml file stored on drive.
-            if event == "Select file...":
-                filename = sg.popup_get_file(
-                    "Select Puzzle",
-                    no_window=True,
-                    initial_folder=r".\puzzles",
-                    file_types=(("XML", ".xml"),),
-                )
-                break
-            # Select puzzle id# from https://webpbn.com
-            if event == "Enter puzzle ID#":
-                puzzle_id = values[0]
-                filename = download_puzzle_file(puzzle_id)
-                break
-            # Select random puzzle of chosen size from https://webpbn.com
-            if event == "Select random puzzle":
-                size = values["size"]
-                puzzle_id = get_random_puzzle_id(size)
-                filename = download_puzzle_file(puzzle_id)
-                break
+    # Prompt user to select puzzle to solve.
+    while True:
+        event, values = window.read()
+        if event == sg.WIN_CLOSED or event == "Cancel":
+            sys.exit()
+        # Select .xml file stored on drive.
+        if event == "Select file...":
+            filename = sg.popup_get_file(
+                "Select Puzzle",
+                no_window=True,
+                initial_folder=r".\puzzles",
+                file_types=(("XML", ".xml"),),
+            )
             break
-        window.close()
+        # Select puzzle id# from https://webpbn.com
+        if event == "Enter puzzle ID#":
+            puzzle_id = values[0]
+            filename = download_puzzle_file(puzzle_id)
+            break
+        # Select random puzzle of chosen size from https://webpbn.com
+        if event == "Select random puzzle":
+            size = values["size"]
+            puzzle_id = get_random_puzzle_id(size)
+            filename = download_puzzle_file(puzzle_id)
+            break
+        break
+    window.close()
 
     # file = f"{os.getcwd()}\\Small Axe.xml"
     # file = f"{os.getcwd()}\\Who am I.xml"
